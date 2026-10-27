@@ -2,7 +2,7 @@
 
 
 Client-side, file-based mods for Deadlock: one VPK, a folder of modules, an in-game ⚙ menu (timings, box routes, parry timer, enemy ult tracker) plus sound and skin packs.
-Download the ready VPK from [Releases](../../releases). Build from source with [modlock](https://github.com/paralin/modlock).
+**Install:** download `Install-QoL-HUD.bat` from [Releases](../../releases/latest), double-click, press 1.
 Two file-based mods for the vanilla Deadlock client. They override files through the `citadel/addons` search path:
 no injection, no memory reads, nothing touches the process. Valve has published no policy on such mods; in practice
 cosmetic/HUD/sound VPKs are widespread and no bans are known. Use at your own risk.
@@ -14,7 +14,12 @@ cosmetic/HUD/sound VPKs are widespread and no bans are known. Use at your own ri
 
 Ideas backlog with what is and isn't possible client-side: [CATALOG.md](CATALOG.md).
 
-## Install (both)
+## Install
+**Easy:** download `Install-QoL-HUD.bat` from the latest release, double-click, press 1. It finds the game, downloads and
+verifies the mod, patches `gameinfo.gi` and checks for conflicts. Press 2 to get a report to send back, 3 to uninstall.
+Details: [installer/README.md](installer/README.md).
+
+**Manual:**
 1. Copy `pakNN_dir.vpk` into `Steam\steamapps\common\Deadlock\game\citadel\addons\` (create the folder).
 2. In `game\citadel\gameinfo.gi`, inside `SearchPaths`, make sure the first line is `Game citadel/addons` (patches reset this).
 3. Restart Deadlock. Remove the vpk if the game fails to start after a patch.
