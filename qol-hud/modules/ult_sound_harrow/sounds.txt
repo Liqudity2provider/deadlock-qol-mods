@@ -1,0 +1,3 @@
+# Nurse Harrow ultimate sound paths, one per line. Find them in-game:
+#   snd_showstart 3   (console, Hero Sandbox) -> ult -> copy the vsnd paths printed
+# Expect something under sounds/heroes/<harrow codename>/ (hero folders use internal codenames, not display names).

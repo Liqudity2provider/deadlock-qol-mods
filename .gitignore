@@ -4,3 +4,4 @@ heavy-melee-sound/boosted/
 heavy-melee-sound/stage/
 heavy-melee-sound/dist/
 .DS_Store
+qol-hud/modules/*/source/
