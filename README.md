@@ -1,7 +1,7 @@
 # Deadlock QoL mods
 
 
-Client-side, file-based mods for Deadlock: one VPK, a folder of modules, an in-game ⚙ menu (timings, box routes, parry timer, enemy ult tracker) plus sound and skin packs.
+Client-side, file-based mods for Deadlock, tested in-game (build 6821): one VPK, a folder of modules, an in-game ⚙ menu (timings, real box routes on the minimap, parry timer, enemy ult tracker) plus sound packs built without Valve tools.
 **Install:** download `Install-QoL-HUD.bat` from [Releases](../../releases/latest), double-click, press 1.
 Two file-based mods for the vanilla Deadlock client. They override files through the `citadel/addons` search path:
 no injection, no memory reads, nothing touches the process. Valve has published no policy on such mods; in practice

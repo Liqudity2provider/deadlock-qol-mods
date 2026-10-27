@@ -1,7 +1,7 @@
 // Match clock. Primary: read the mm:ss label the game draws in the top bar.
 // Fallback: a local stopwatch started when the MatchStart takeover disappears, or by the 0:00 button.
 var QolClock = (function () {
-  var hud = null, clockLabel = null, lastText = "", lastSeconds = -1;
+  var hud = null, clockLabel = null, lastText = "", lastSeconds = -1, labelPathStr = "";
   var manualStartAt = null, matchStartSeen = false, matchStartGone = false;
   var TIME_RE = /^\s*(\d{1,3}):(\d{2})\s*$/;
 
@@ -38,20 +38,16 @@ var QolClock = (function () {
     var h = hudPanel();
     if (h) {
       if (!clockLabel || !clockLabel.IsValid()) {
+        // only trust a mm:ss label inside the top bar: other HUD labels (respawn timers, hideout clocks) also look like mm:ss
         var top = h.FindChildTraverse("TopBar");
-        clockLabel = (top && findClockLabel(top)) || findClockLabel(h);
+        clockLabel = top ? findClockLabel(top) : null;
+        if (clockLabel) { var q = clockLabel, parts = []; while (q && q !== top && parts.length < 6) { parts.unshift(q.id || q.paneltype); q = q.GetParent(); } labelPathStr = parts.join("/"); }
       }
       if (clockLabel) {
         var t = clockLabel.text;
         if (t !== lastText) { lastText = t; var s = parse(t); if (s >= 0) lastSeconds = s; }
       }
-      // fallback trigger: MatchStart takeover shown then hidden => match clock is at 0
-      var ms = h.GetParent() ? h.GetParent().FindChildTraverse("MatchStart") : null;
-      if (ms && ms.IsValid()) {
-        var vis = ms.BHasClass("Visible") || ms.visible;
-        if (vis) matchStartSeen = true;
-        else if (matchStartSeen && !matchStartGone) { matchStartGone = true; if (manualStartAt === null) manualStartAt = Date.now(); }
-      }
+      // (auto-start from the MatchStart takeover removed: it fired in the main menu. Manual 0:00 button remains.)
     }
     $.Schedule(0.25, poll);
   }
@@ -64,7 +60,8 @@ var QolClock = (function () {
 
   function manualStart() { manualStartAt = Date.now(); lastSeconds = -1; clockLabel = null; }
   function source() { return lastSeconds >= 0 ? "hud" : manualStartAt !== null ? "manual" : "none"; }
+  function labelText() { return clockLabel && clockLabel.IsValid() ? clockLabel.text : ""; }
 
   $.Schedule(1.0, poll);
-  return { now: now, manualStart: manualStart, source: source };
+  return { now: now, manualStart: manualStart, source: source, labelText: labelText, labelPath: function () { return labelPathStr; } };
 })();

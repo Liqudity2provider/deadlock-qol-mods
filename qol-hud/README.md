@@ -8,13 +8,24 @@ the menu says so and settings last for the session).
 core/                        settings store, module registry, menu, match clock, base_hud template
 modules/timings/             upcoming objectives strip + marks (S/M/L/Sin/Mid/Box buttons)        [hud]
 modules/routes/              box routes as numbered dots over the minimap                          [hud]
-modules/parry/               parry window + whiff cooldown bar under the crosshair                 [hud]
+modules/parry/               parry window + cooldown bar under the crosshair                       [hud]
 modules/ults/                enemy ult tracker: 6 rows, click when used                            [hud]
 modules/heavy_melee_sound/   louder heavy-melee wind-up (compiled sounds in assets/)               [sound]
 modules/_example_skin/       template for texture/model replacements                              [skin]
 config.json                  {"disabled": [...]} build-time switch; VERSION shown in the menu
 build.py                     assembles core + modules -> src/ -> dist/pak57_dir.vpk (modlock)
+tools/vsnd.py                any audio -> Deadlock .vsnd_c using the original game file as template (no CSDK)
+tools/gen_routes.py          map entity lump -> modules/routes/routes_data.js
 ```
+
+## Making a sound module (no Valve tools)
+```bash
+modlock vpk unpack "<Deadlock>/game/citadel/pak01_dir.vpk" orig sounds/player/melee/shared/charged_melee_full.vsnd_c
+python3 tools/vsnd.py build orig/sounds/player/melee/shared/charged_melee_full.vsnd_c my.ogg \
+    modules/my_sound/assets/sounds/player/melee/shared/charged_melee_full.vsnd_c --onset --gain 6
+```
+`--onset` cuts everything before the main hit so it lands at 0 ms; `--seconds N` limits length. Find which file an
+event plays with `modlock kv3 soundevents/....vsndevts_c` (see `Player.Melee.Hold.Shared`, `Nurse.Fear.Cast`).
 
 The menu has tabs All / HUD / Sounds / Skins. HUD cards have an ON/OFF pill and settings rows; sound and skin
 cards are informational (they are files inside the VPK, so changing them means rebuilding and restarting).
@@ -58,6 +69,13 @@ a crate group. Settings: lookahead seconds, list rows, creep waves on/off, posit
 Coordinates in `modules/routes/module.js` are minimap-relative placeholders. Enable a route, read
 `[QolRoutes] minimap rect …` in the console and adjust. Settings: dot size, numbers, remember last route.
 
-## Status
-Compiles; **not yet run in-game**. Unknowns: clock label text, `base_hud.xml` still being the HUD root,
-`$.persistentStorage` availability. Each has a fallback.
+## Status (tested in Deadlock build 6821, Oct 27 2026)
+Run in real Deadlock (hideout, sandbox, local bot match on dl_midtown):
+- Match clock is the top bar's `GameTime` label; HUD hides in menu / hideout / hero select, shows in matches (also with the shop open).
+- Timings strip and list match the game clock; menu, tabs, ON/OFF and settings work in-game.
+- Box routes: crate clusters come from the map's entity lump (`tools/gen_routes.py`), placed with the minimap square
+  measured from Panorama (`minimap_container` centre + `hud_minimap` size); verified pixel-exact against walker icons.
+- Parry timer triggers on the game's own `#parry_unavailable` panel (appears on parry, hides when ready).
+- Sounds: `tools/vsnd.py` builds `.vsnd_c` without Valve tools; the game plays them (verified with `soundinfo`).
+- Not available in this build's Panorama: persistent storage (settings reset on restart), key binds outside focus.
+- Debug overlay: build with `QOL_DEBUG=1 ./build.sh`.

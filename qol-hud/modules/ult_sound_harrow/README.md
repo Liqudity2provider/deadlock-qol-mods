@@ -1,13 +1,12 @@
-# Nurse Harrow ult → "Ты не бойся ночи" (ENZRO)
+# Nurse Harrow ult -> "Ты не бойся ночи" (ENZRO)
 
-Replaces the ultimate's sound with a clip of the track. Two clips are prepared in `source/`:
-`harrow_ult_8s.wav` (first 8 s, leading silence trimmed, normalized to -12 LUFS, fade-out) and `harrow_ult_full.wav` (28 s).
-Pick the length that matches the ult's real duration: the engine stops a one-shot sound only when the event ends, so a
-clip longer than the ult keeps playing.
+Nurse Harrow is `hero_nurse` internally; her ult casts the event `Nurse.Fear.Cast`, which plays
+`sounds/abilities/nurse/nurse_fear_channel_start.vsnd`. We replace that file with an 8 s clip of the track
+(leading silence trimmed, normalized, fade-out). Verified in-game: the sound still plays at 7.1 s (original is 3.97 s).
 
-1. Find the ult sound paths in-game: `snd_showstart 3`, use the ult, copy the `sounds/…vsnd` lines into `sounds.txt`.
-2. `./prepare.sh` (or `./prepare.sh source/harrow_ult_full.wav`) → `boosted/`.
-3. Windows + CSDK 12: `..\heavy_melee_sound\build.ps1 -Csdk D:\Reduced_CSDK_12 -Boosted boosted -Out assets` → compiled `.vsnd_c` land in `assets/`.
-4. `../../build.sh` packs it into `pak57_dir.vpk`; the menu shows the pack on the Sounds tab.
-
-The track is copyrighted: `source/` is excluded from the public repo. Build it for yourself and friends.
+```bash
+python3 ../../tools/vsnd.py build <original nurse_fear_channel_start.vsnd_c> source/harrow_ult_8s.wav \
+    assets/sounds/abilities/nurse/nurse_fear_channel_start.vsnd_c --seconds 8
+```
+The track is copyrighted: `source/` and the compiled asset are not in the public repo, and public releases build
+with this module disabled (`config.public.json`).

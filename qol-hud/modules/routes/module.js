@@ -1,75 +1,111 @@
-// Box routes drawn over the minimap as numbered dots. Coordinates are minimap-relative (0..1, x right, y down).
-// These are PLACEHOLDERS until calibrated in-game (see README: calibration mode prints the minimap rect to console).
+// Box routes over the minimap. Data: routes_data.js (generated from the map's entities, tools/gen_routes.py).
+// Placement: the minimap image spans the citadel_minimap_boundary square; on screen we take the minimap panel's
+// rect from Panorama and apply a per-build calibration (measured in-game: see README).
 var QolRoutes = (function () {
-  var ROUTES = [
-    { id: "left",  name: "Left lane boxes",  color: "#4fd1c5", pts: [[0.16, 0.78], [0.14, 0.66], [0.20, 0.58], [0.15, 0.48], [0.22, 0.40]] },
-    { id: "mid",   name: "Mid boxes",        color: "#f0a132", pts: [[0.50, 0.80], [0.46, 0.68], [0.54, 0.60], [0.48, 0.50], [0.53, 0.42]] },
-    { id: "right", name: "Right lane boxes", color: "#f06a5a", pts: [[0.84, 0.78], [0.86, 0.66], [0.80, 0.58], [0.85, 0.48], [0.78, 0.40]] },
-  ];
-  var idx = -1;            // -1 = off
-  var dots = [], enabled = true, dotSize = 10, showNumbers = true;
+  var D = QolRoutesData;
+  var idx = -1, enabled = true, dotSize = 9, showNumbers = true, showBuffs = false, showLine = true;
+  // calibration: map-image square relative to the measured minimap panel rect (fractions of panel size)
+  var CAL = { dx: 0, dy: 0, scale: 1.0 };
+  var dots = [];
 
   function root() { var r = $.GetContextPanel(); while (r && r.GetParent()) r = r.GetParent(); return r; }
-  function hud() { var r = root(); return r ? r.FindChildTraverse("Hud") : null; }
+  function find(id) { var r = root(); return r ? r.FindChildTraverse(id) : null; }
 
-  // absolute rect of the minimap panel, by summing layout offsets up the tree
+  function absRect(p) {
+    if (!p || !p.IsValid()) return null;
+    var w = p.actuallayoutwidth || 0, h = p.actuallayoutheight || 0;
+    var x = 0, y = 0;
+    if (p.GetPositionWithinWindow) { var pos = p.GetPositionWithinWindow(); x = pos.x; y = pos.y; }
+    else { var q = p; while (q && q.IsValid() && q.GetParent()) { x += q.actualxoffset || 0; y += q.actualyoffset || 0; q = q.GetParent(); } }
+    return { x: x, y: y, w: w, h: h };
+  }
+
   function minimapRect() {
-    var h = hud(); if (!h) return null;
-    var mm = h.FindChildTraverse("hud_minimap") || h.FindChildTraverse("minimap_container");
-    if (!mm || !mm.IsValid()) return null;
-    var x = 0, y = 0, p = mm;
-    while (p && p.IsValid() && p.GetParent()) { x += p.actualxoffset || 0; y += p.actualyoffset || 0; p = p.GetParent(); }
-    var scale = mm.actuallayoutwidth && mm.actualuiscale_x ? mm.actualuiscale_x : 1;
-    return { x: x / scale, y: y / scale, w: (mm.actuallayoutwidth || 0) / scale, h: (mm.actuallayoutheight || 0) / scale };
+    // Measured in-game (build 6821): the map image is the hud_minimap panel (378x378 at 1080p), centred in
+    // minimap_container. hud_minimap carries a transform, so its own GetPositionWithinWindow is not its top-left;
+    // the container's position is reliable, so we centre the image square inside it.
+    var hud = find("Hud"); if (!hud) return null;
+    var img = hud.FindChildTraverse("hud_minimap"), box = absRect(hud.FindChildTraverse("minimap_container"));
+    if (!img || !box || box.w < 40 || !(box.x === box.x)) return null;   // NaN check: hidden minimap
+    var w = img.actuallayoutwidth || box.w, h = img.actuallayoutheight || box.h;
+    return { id: "minimap_container", x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w: w, h: h };
+  }
+
+  function southTeam() {
+    // routes are stored for the team whose base is at the bottom of the unrotated minimap. Deadlock rotates the minimap
+    // so your base is always at the bottom, which makes stored coordinates valid for both teams.
+    return true;
   }
 
   function clear() { dots.forEach(function (d) { if (d && d.IsValid()) d.DeleteAsync(0); }); dots = []; }
 
-  function draw() {
-    var overlay = root() ? root().FindChildTraverse("QolRoutes") : null;
-    var label = root() ? root().FindChildTraverse("QolRoutesLabel") : null;
-    if (!overlay) return;
-    clear();
-    if (idx < 0 || !enabled) { overlay.style.visibility = "collapse"; if (label) label.text = "routes: off"; return; }
-    var rect = minimapRect();
-    if (!rect || rect.w < 10) { if (label) label.text = "routes: no minimap"; $.Schedule(1.0, draw); return; }
-    var r = ROUTES[idx];
-    overlay.style.visibility = "visible";
-    overlay.style.position = Math.round(rect.x) + "px " + Math.round(rect.y) + "px 0px";
-    overlay.style.width = Math.round(rect.w) + "px"; overlay.style.height = Math.round(rect.h) + "px";
-    var title = overlay.FindChildTraverse("QolRoutesTitle"); if (title) { title.text = r.name; title.style.color = r.color; }
-    if (label) label.text = "routes: " + r.id;
-    r.pts.forEach(function (pt, i) {
-      var d = $.CreatePanel("Panel", overlay, "QolDot" + i);
-      d.hittest = false;
-      d.style.position = Math.round(pt[0] * rect.w - dotSize / 2) + "px " + Math.round(pt[1] * rect.h - dotSize / 2) + "px 0px";
-      d.style.width = dotSize + "px"; d.style.height = dotSize + "px"; d.style.borderRadius = (dotSize / 2) + "px";
-      d.style.backgroundColor = r.color; d.style.border = "1px solid #000000";
-      dots.push(d);
-      if (!showNumbers) return;
-      var n = $.CreatePanel("Label", overlay, "QolDotN" + i);
-      n.hittest = false; n.text = String(i + 1);
-      n.style.position = Math.round(pt[0] * rect.w + 6) + "px " + Math.round(pt[1] * rect.h - 8) + "px 0px";
-      n.style.fontSize = "10px"; n.style.color = "#ffffff"; n.style.textShadow = "1px 1px 1px 1.0 #000000";
-      dots.push(n);
-    });
-    // calibration help: print the minimap rect once per draw so coordinates can be tuned
-    $.Msg("[QolRoutes] minimap rect x=" + rect.x + " y=" + rect.y + " w=" + rect.w + " h=" + rect.h);
+  function dot(parent, x, y, size, color, border) {
+    var d = $.CreatePanel("Panel", parent, ""); d.hittest = false;
+    d.style.position = Math.round(x - size / 2) + "px " + Math.round(y - size / 2) + "px 0px";
+    d.style.width = size + "px"; d.style.height = size + "px"; d.style.borderRadius = (size / 2) + "px";
+    d.style.backgroundColor = color; d.style.border = (border || 1) + "px solid #000000cc";
+    dots.push(d); return d;
+  }
+  function label(parent, x, y, text, color, size) {
+    var n = $.CreatePanel("Label", parent, ""); n.hittest = false; n.text = text;
+    n.style.position = Math.round(x) + "px " + Math.round(y) + "px 0px";
+    n.style.fontSize = (size || 10) + "px"; n.style.color = color || "#ffffff"; n.style.fontWeight = "bold";
+    n.style.textShadow = "1px 1px 1px 1.0 #000000"; dots.push(n); return n;
   }
 
-  function cycle() { idx = idx + 1 >= ROUTES.length ? -1 : idx + 1; QolSettings.set("routes", "lastRoute", idx); draw(); }
+  function draw() {
+    var overlay = find("QolRoutes"), btn = find("QolRoutesLabel");
+    if (!overlay) return;
+    clear();
+    if (idx < 0 || !enabled) { overlay.style.visibility = "collapse"; if (btn) btn.text = "routes: off"; return; }
+    var rect = minimapRect();
+    if (!rect) { if (btn) btn.text = "routes: no map"; overlay.style.visibility = "collapse"; return; }
+    var scale = overlay.actualuiscale_x || 1;
+    var side = rect.w * CAL.scale;
+    var ox = (rect.x + rect.w * CAL.dx) / scale, oy = (rect.y + rect.h * CAL.dy) / scale, S = side / scale;
+    overlay.style.visibility = "visible";
+    overlay.style.position = Math.round(ox) + "px " + Math.round(oy) + "px 0px";
+    overlay.style.width = Math.round(S) + "px"; overlay.style.height = Math.round(S) + "px";
+    var r = D.routes[idx];
+    if (btn) btn.text = "routes: " + r.id;
+    var title = find("QolRoutesTitle"); if (title) { title.text = r.name; title.style.color = r.color; }
+    if (showBuffs) D.buffs.forEach(function (b) { dot(overlay, b[0] * S, b[1] * S, 4, "#c084fccc", 0); });
+    if (showLine) {
+      for (var i = 0; i + 1 < r.pts.length; i++) {
+        var a = r.pts[i], b = r.pts[i + 1];
+        var steps = Math.max(2, Math.round(Math.hypot((b[0] - a[0]) * S, (b[1] - a[1]) * S) / 6));
+        for (var k = 1; k < steps; k++) { var t = k / steps; dot(overlay, (a[0] + (b[0] - a[0]) * t) * S, (a[1] + (b[1] - a[1]) * t) * S, 2, r.color + "aa", 0); }
+      }
+    }
+    r.pts.forEach(function (p, i) {
+      var sz = dotSize + Math.min(6, p[2] - 4);
+      dot(overlay, p[0] * S, p[1] * S, sz, r.color, 1);
+      if (showNumbers) label(overlay, p[0] * S + sz / 2, p[1] * S - 8, String(i + 1), "#ffffff", 10);
+    });
+    if (typeof QolDebug !== "undefined" && QolDebug.on) QolDebug.log("minimap " + rect.id + " x=" + Math.round(rect.x) + " y=" + Math.round(rect.y) + " w=" + Math.round(rect.w) + " h=" + Math.round(rect.h) + " uiscale=" + scale);
+  }
+
+  function cycle() { idx = idx + 1 >= D.routes.length ? -1 : idx + 1; QolSettings.set("routes", "lastRoute", idx); draw(); }
+  function tick() { if (idx >= 0) draw(); $.Schedule(1.5, tick); }   // minimap moves when shop / scoreboard open
+
   QolRegistry.register({
-    id: "routes", name: "Box routes", description: "numbered dots over the minimap",
+    id: "routes", name: "Box routes", description: "crate clusters from the real map, numbered in pickup order",
     settings: [
-      { key: "dotSize", label: "dot size", type: "number", def: 10, min: 6, max: 18, step: 2 },
+      { key: "dotSize", label: "dot size", type: "number", def: 9, min: 5, max: 16, step: 1 },
       { key: "numbers", label: "show numbers", type: "bool", def: true },
-      { key: "remember", label: "remember last route", type: "bool", def: true },
+      { key: "line", label: "draw path", type: "bool", def: true },
+      { key: "buffs", label: "show buff containers", type: "bool", def: false },
+      { key: "calScale", label: "calibration: size %", type: "number", def: 100, min: 80, max: 140, step: 1 },
+      { key: "calX", label: "calibration: x %", type: "number", def: 0, min: -30, max: 30, step: 1 },
+      { key: "calY", label: "calibration: y %", type: "number", def: 0, min: -30, max: 30, step: 1 },
     ],
-    onChange: function (k, v) { if (k === "dotSize") dotSize = v; if (k === "numbers") showNumbers = v; if (k === "remember" && v) { var r = QolSettings.get("routes", "lastRoute", -1); if (typeof r === "number") idx = r; } draw(); },
+    onChange: function (k, v) {
+      if (k === "dotSize") dotSize = v; if (k === "numbers") showNumbers = v; if (k === "line") showLine = v; if (k === "buffs") showBuffs = v;
+      if (k === "calScale") CAL.scale = v / 100; if (k === "calX") CAL.dx = v / 100; if (k === "calY") CAL.dy = v / 100;
+      draw();
+    },
     setEnabled: function (on) { enabled = on; draw(); },
   });
-  // redraw periodically: the minimap moves/scales when the shop or scoreboard opens
-  function tick() { if (idx >= 0) draw(); $.Schedule(2.0, tick); }
   $.Schedule(2.0, tick);
-  return { cycle: cycle, draw: draw, ROUTES: ROUTES };
+  return { cycle: cycle, draw: draw, rect: minimapRect };
 })();

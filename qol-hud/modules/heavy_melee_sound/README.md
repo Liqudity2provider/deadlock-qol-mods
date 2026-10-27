@@ -1,56 +1,14 @@
-# Heavy melee: louder, more distinct wind-up sound
+# Heavy melee: the hit lands at the start of the wind-up
 
-Goal: when an enemy starts a heavy melee, the charge sound is louder and sharper than stock, so you parry on reaction.
+Replaces `sounds/player/melee/shared/charged_melee_full.vsnd` (event `Player.Melee.Hold.Shared`, shared by every
+hero). In-game timing from a bot match: this sound starts the heavy melee, the lunge follows 0.33-0.38 s later and the
+swing ~0.8 s later. The replacement puts the loud part at ~60 ms, leaving ~0.3 s to parry.
 
-A sound mod is a VPK that **replaces the compiled sound file at the exact same path**. Nothing else changes, so the
-mod survives most patches. Compiling `.wav -> .vsnd_c` needs Valve's resourcecompiler from **Reduced CSDK 12**, which
-is Windows-only. Everything below runs on a Windows PC with Deadlock installed.
-
-## 1. Find the right sound (5 minutes, in the Hero Sandbox)
-```
-snd_showstart 3          // console: print every sound as it starts
-```
-Spawn a dummy (`citadel_create_unit haze`), stand next to it and hold melee. The console prints the path of the
-wind-up sound, something like `sounds/heroes/<hero>/melee_heavy_charge.vsnd` or a shared
-`sounds/weapons/melee/heavy_windup_*.vsnd`. Every hero may have its own variant: repeat for 2–3 heroes and note
-which paths are shared. Write the paths into `sounds.txt`, one per line.
-
-The soundevent itself (volume, pitch, falloff) lives in `soundevents/*.vsndevts_c`. Editing it also needs the
-CSDK, and the event names are not in any public doc, so we go the file-replacement route.
-
-## 2. Export the originals
-Source 2 Viewer → open `Deadlock/game/citadel/pak01_dir.vpk` → navigate to each path from `sounds.txt` →
-right click → *Decompile & export* → you get `.wav` files. Put them in `original/` keeping the folder structure.
-
-## 3. Pick the replacement sound
-`source/heavy_windup.wav` is the current candidate (1.07 s, leading silence trimmed so it starts instantly, +6 dB,
-high shelf +3 dB at 3 kHz, limiter). `./prepare.sh` copies it to every path from `sounds.txt` into `boosted/`.
-`./prepare.sh my_sound.ogg` swaps in another file with the same trim/boost treatment.
-
-Keep the length close to the original wind-up: the game cuts the sound when the lunge starts.
-
-## 3b. Or boost the originals instead
+Rebuild (no Valve tools needed):
 ```bash
-./boost.sh original/ boosted/     # ffmpeg: +9 dB, high-shelf +4 dB at 3 kHz, limiter, trims leading silence
+python3 ../../tools/vsnd.py build <original charged_melee_full.vsnd_c> source/heavy_windup_original.ogg \
+    assets/sounds/player/melee/shared/charged_melee_full.vsnd_c --onset --gain 6
 ```
-Tune `GAIN_DB` / `SHELF_DB` in the script. Keep the file length identical to the original: the game
-expects the wind-up to end when the lunge starts.
+`source/heavy_windup_ingame_preview.mp3` is exactly what plays in-game.
 
-## 4. Compile and pack (Windows, CSDK 12)
-```powershell
-.\build.ps1 -Csdk "D:\Reduced_CSDK_12"                      # -> assets/ (packed by qol-hud/build.sh into the main VPK)
-.\build.ps1 -Csdk "D:\Reduced_CSDK_12" -Out dist\pak58_dir.vpk   # or a standalone sound pack
-```
-The script copies `boosted/` into a CSDK addon's `content/` tree at the original paths, runs
-`resourcecompiler.exe` on every wav, collects the `.vsnd_c` output and packs `pak58_dir.vpk` with `CSDKCfgVPK.exe`
-(or `modlock vpk pack` if present).
-
-## 5. Install
-Copy `pak58_dir.vpk` to `Deadlock\game\citadel\addons\` and make sure `gameinfo.gi` has `Game citadel/addons` in
-`SearchPaths`. The Deadlock Mod Manager does both for you if you zip the vpk.
-
-## Caveats
-- Valve has published no policy on client mods. No bans are known for file-based cosmetic/sound mods, and the
-  mod never touches the process. Still your risk.
-- The louder cue only helps for heavy melees **you can already hear** (same audio range); it doesn't reveal anything new.
-- If the wind-up sound is a hero-specific voice grunt rather than a shared SFX, you need one replacement per hero.
+Older notes (CSDK route) are kept in git history.

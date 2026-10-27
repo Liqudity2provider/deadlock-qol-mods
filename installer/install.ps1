@@ -94,26 +94,58 @@ function Read-VpkTree([string]$path) {
 function Get-Sha256([string]$path) { return (Get-FileHash -Algorithm SHA256 -Path $path).Hash.ToLower() }
 
 # ---------------------------------------------------------------- gameinfo.gi
-function Test-AddonsLine([string]$gi) { return [regex]::IsMatch((Get-Content -Raw $gi), '(?m)^\s*Game\s+citadel/addons\s*$') }
+# Since the Sep 29 2026 update Valve's stock gameinfo.gi has no Mod/Write search paths. Without them the FIRST Game path
+# becomes the MOD and default write path, so a bare "Game citadel/addons" makes the engine look for
+# cfg/user_keys_default.vcfg inside addons and abort: "Unable to read default keybinding configuration".
+# So we always add Mod/Write for citadel and core (tagged "// qolhud" so uninstall removes exactly our lines).
+$Tag_ = "// qolhud"
+function Test-AddonsLine([string]$gi) { return [regex]::IsMatch((Get-Content -Raw $gi), '(?m)^\s*Game\s+citadel/addons\b') }
+function Test-ModWrite([string]$gi) {
+  $t = Get-Content -Raw $gi
+  return ([regex]::IsMatch($t, '(?m)^\s*Mod\s+citadel\b') -and [regex]::IsMatch($t, '(?m)^\s*Write\s+citadel\b'))
+}
+function Test-SearchPaths([string]$gi) { return ((Test-AddonsLine $gi) -and (Test-ModWrite $gi)) }
 
 function Add-AddonsLine([string]$gi) {
+  # returns a list of human-readable changes (empty = nothing to do)
+  $changes = New-Object System.Collections.ArrayList
   $text = [IO.File]::ReadAllText($gi)
-  if ([regex]::IsMatch($text, '(?m)^\s*Game\s+citadel/addons\s*$')) { return $false }
+  $orig = $text
   $nl = "`n"; if ($text.Contains("`r`n")) { $nl = "`r`n" }
   $rx = [regex]'(?s)(SearchPaths\s*\{[ \t]*\r?\n)([ \t]*)'
   $m = $rx.Match($text)
   if (-not $m.Success) { throw "SearchPaths block not found in gameinfo.gi (format changed?)" }
   $indent = $m.Groups[2].Value; if (-not $indent) { $indent = "`t`t`t" }
-  $backup = $gi + ".qolhud.bak"
-  if (-not (Test-Path $backup)) { Copy-Item $gi $backup }
-  $new = $rx.Replace($text, ('$1' + $indent + $AddonsLine + $nl + '$2'), 1)
-  [IO.File]::WriteAllText($gi, $new, (New-Object Text.UTF8Encoding($false)))
-  return $true
+  if (-not [regex]::IsMatch($text, '(?m)^\s*Game\s+citadel/addons\b')) {
+    $text = $rx.Replace($text, ('$1' + $indent + $AddonsLine + $nl + '$2'), 1)
+    [void]$changes.Add("added 'Game citadel/addons'")
+  }
+  $need = @()
+  foreach ($kv in @(@("Mod", "citadel"), @("Write", "citadel"), @("Mod", "core"), @("Write", "core"))) {
+    if (-not [regex]::IsMatch($text, ('(?m)^\s*' + $kv[0] + '\s+' + $kv[1] + '\b'))) { $need += ,$kv }
+  }
+  if ($need.Count -gt 0) {
+    $block = ""
+    foreach ($kv in $need) { $block += $indent + $kv[0].PadRight(20) + $kv[1] + "`t`t" + $Tag_ + $nl }
+    # after the last "Game core" line if present (where Valve used to keep them), else after the addons line
+    $anchor = [regex]::Matches($text, '(?m)^[ \t]*Game[ \t]+core[ \t]*(//[^\r\n]*)?\r?\n')
+    if ($anchor.Count -gt 0) { $a = $anchor[$anchor.Count - 1]; $pos = $a.Index + $a.Length }
+    else { $a = [regex]::Match($text, '(?m)^[ \t]*Game[ \t]+citadel/addons[^\r\n]*\r?\n'); $pos = $a.Index + $a.Length }
+    $text = $text.Insert($pos, $block)
+    [void]$changes.Add("added Mod/Write paths (" + (($need | ForEach-Object { $_[0] + " " + $_[1] }) -join ", ") + ")")
+  }
+  if ($text -ne $orig) {
+    $backup = $gi + ".qolhud.bak"
+    if (-not (Test-Path $backup)) { Copy-Item $gi $backup }
+    [IO.File]::WriteAllText($gi, $text, (New-Object Text.UTF8Encoding($false)))
+  }
+  return ,$changes
 }
 
 function Remove-AddonsLine([string]$gi) {
   $text = [IO.File]::ReadAllText($gi)
   $new = [regex]::Replace($text, '(?m)^[ \t]*Game[ \t]+citadel/addons[ \t]*\r?\n', '')
+  $new = [regex]::Replace($new, '(?m)^[^\r\n]*// qolhud[ \t]*\r?\n', '')
   if ($new -ne $text) { [IO.File]::WriteAllText($gi, $new, (New-Object Text.UTF8Encoding($false))); return $true }
   return $false
 }
@@ -211,11 +243,16 @@ function Do-Install {
   $info = @{ name = "QoL HUD"; version = $tagName; file = $slot; sha256 = $hash; installed_at = (Get-Date).ToString("s"); repo = $Repo }
   ($info | ConvertTo-Json) | Set-Content -Path (Join-Path $addons $Marker) -Encoding ASCII
   Ok ("placed " + $dest)
-  if (Add-AddonsLine $gi) { Ok "gameinfo.gi: added 'Game citadel/addons' (backup: gameinfo.gi.qolhud.bak)" } else { Ok "gameinfo.gi already loads addons" }
+  $ch = Add-AddonsLine $gi
+  if ($ch.Count -gt 0) { foreach ($c in $ch) { Ok ("gameinfo.gi: " + $c) }; Ok "backup: gameinfo.gi.qolhud.bak" } else { Ok "gameinfo.gi already set up for addons" }
+  # the engine drops an empty 'rpt' folder into addons when it crashes on startup; clean it
+  $rpt = Join-Path $addons "rpt"
+  if ((Test-Path $rpt) -and -not (Get-ChildItem -Force $rpt)) { Remove-Item -Force $rpt; Ok "removed empty crash folder addons\rpt" }
 
   Step "Verifying"
   if ((Get-Sha256 $dest) -eq $hash) { Ok "installed file matches" } else { Bad "installed file differs from download" }
   if (Test-AddonsLine $gi) { Ok "gameinfo.gi loads citadel/addons" } else { Bad "gameinfo.gi still has no addons line" }
+  if (Test-ModWrite $gi) { Ok "gameinfo.gi keeps citadel as Mod/Write path" } else { Bad "gameinfo.gi has no Mod/Write citadel lines: the game would crash on start" }
   Check-Conflicts $addons $slot
 
   Say ""
@@ -234,6 +271,8 @@ function Do-Report {
     $citadel = Join-Path $dl "game\citadel"; if (-not (Test-Path $citadel)) { $citadel = Join-Path $dl "game/citadel" }
     $addons = Join-Path $citadel "addons"; $gi = Join-Path $citadel "gameinfo.gi"
     if (Test-AddonsLine $gi) { Ok "gameinfo.gi loads citadel/addons" } else { Bad "gameinfo.gi has no 'Game citadel/addons' line (run Install to repair)" }
+    if ((Test-AddonsLine $gi) -and -not (Test-ModWrite $gi)) { Bad "gameinfo.gi has addons but no 'Mod/Write citadel': this crashes Deadlock with 'Unable to read default keybinding configuration'. Run Install to repair." }
+    elseif (Test-ModWrite $gi) { Ok "gameinfo.gi keeps citadel as Mod/Write path" }
     $ours = Get-Ours $addons
     if ($ours) {
       $f = Join-Path $addons $ours.file
@@ -292,7 +331,7 @@ function Do-Uninstall {
   } else { Ok "QoL HUD VPK not present" }
   if (Test-Path (Join-Path $addons $Marker)) { Remove-Item -Force (Join-Path $addons $Marker) }
   $others = @(Get-ChildItem -Path $addons -Filter "pak*_dir.vpk" -ErrorAction SilentlyContinue)
-  if ($others.Count -eq 0) { if (Remove-AddonsLine $gi) { Ok "gameinfo.gi: removed addons line (no other addon VPKs)" } }
+  if ($others.Count -eq 0) { if (Remove-AddonsLine $gi) { Ok "gameinfo.gi: removed our search path lines (no other addon VPKs)" } }
   else { Ok ("kept the addons line: " + $others.Count + " other addon VPK(s) installed") }
   Say ""; Say "  Uninstalled." "Green"
 }

@@ -7,10 +7,10 @@ no memory, no network: everything below respects that. ✅ built · 🔧 scaffol
 ## HUD modules (toggle + settings in the ⚙ menu)
 | | Module | What | Notes |
 |---|---|---|---|
-| ✅ | Timings | next-15 s strip + list: urn, bridge buff, camps, crates, mid, rift, waves; S/M/L/Sin/Mid/Box marks | schedule table per patch |
-| ✅ | Box routes | numbered dots over the minimap, cycle lanes | coordinates need in-game calibration |
-| ✅ | Parry timer | your parry: 0.75 s active window, late tail, 4.5 s whiff cooldown, bar under crosshair | enemy wind-up is not visible to Panorama; detection via modifier panels needs calibration |
-| ✅ | Enemy ult tracker | 6 rows, click when an enemy ults → countdown from base ult CD; right-click sets hero | roster auto-read is best effort |
+| ✅ | Timings | next-15 s strip + list: urn, bridge buff, camps, crates, mid, rift, waves; S/M/L/Sin/Mid/Box marks | tested in-game, reads the real match clock |
+| ✅ | Box routes | crate clusters from the real map entities, numbered pickup order over the minimap | tested in-game, pixel-exact placement |
+| ✅ | Parry timer | 0.75 s window + cooldown, triggered by the game's own parry indicator | tested in-game |
+| ✅ | Enemy ult tracker | 6 rows, click when an enemy ults → countdown from base ult CD; right-click sets hero | renders in-game; roster auto-read is best effort |
 | 💡 | Souls/min | SPM and net-worth delta vs lane opponent from the top bar numbers | pure label math |
 | 💡 | Deny/last-hit counter | your lane CS from the scoreboard, pace vs par (e.g. 60 by 10:00) | |
 | 💡 | Death timer + buyback-style hints | respawn countdown bigger, "what's up when you're back" | reads `respawn_timer` |
@@ -29,7 +29,8 @@ no memory, no network: everything below respects that. ✅ built · 🔧 scaffol
 ## Sound packs (baked into the VPK, listed in the menu as "restart to change")
 | | Pack | What |
 |---|---|---|
-| 🔧 | Loud heavy melee | wind-up +9 dB, sharper top end |
+| ✅ | Heavy melee cue | hit lands at ~60 ms of the wind-up (lunge is at ~350 ms) so you can parry; tested in-game |
+| ✅ | Nurse Harrow ult song | 8 s clip on `Nurse.Fear.Cast`; tested in-game (local only, copyrighted track) |
 | 💡 | Parry success ding | distinct high "tink" on successful parry |
 | 💡 | Hitmarker boost | louder/shorter hit confirm, headshot variant |
 | 💡 | Quiet own gun | -6 dB on your weapon so you hear footsteps and ults |
@@ -55,5 +56,6 @@ no memory, no network: everything below respects that. ✅ built · 🔧 scaffol
 | 💡 | Soul orb glow | brighter orbs for easier last hits/denies |
 
 ## Not possible client-side (needs a server mod, i.e. our training servers)
-Enemy heavy-melee wind-up indicator, true respawn timers for camps/boxes without marks, route beams in the world,
+3D route lines in the world (Panorama has no camera / player position API), knowing whether a crate was already broken,
+enemy heavy-melee wind-up indicator, true respawn timers for camps/boxes without marks,
 auto-detected ult usage, anything that changes gameplay.

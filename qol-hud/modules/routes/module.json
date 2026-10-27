@@ -1,1 +1,1 @@
-{ "id": "routes", "scripts": ["module.js"], "panel": "panel.xml", "quick": "quick.xml" }
+{ "id": "routes", "kind": "hud", "name": "Box routes", "scripts": ["routes_data.js", "module.js"], "panel": "panel.xml", "quick": "quick.xml" }

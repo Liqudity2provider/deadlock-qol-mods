@@ -17,8 +17,10 @@ cfg = json.load(open(os.path.join(HERE, "config.json"))) if os.path.exists(os.pa
 disabled = set(cfg.get("disabled", []))
 scripts_dir = os.path.join(SRC, "panorama", "scripts"); layout_dir = os.path.join(SRC, "panorama", "layout")
 shutil.rmtree(SRC, ignore_errors=True); os.makedirs(scripts_dir); os.makedirs(layout_dir)
-open(os.path.join(scripts_dir, "qol_version.js"), "w").write(f'var QOL_VERSION = "{VERSION}";\n')
-for f, out in (("settings.js", "qol_settings.js"), ("clock.js", "qol_clock.js"), ("menu.js", "qol_menu.js")):
+DEBUG = bool(cfg.get("debug")) or os.environ.get("QOL_DEBUG") == "1"
+FORCE = bool(cfg.get("force_show")) or os.environ.get("QOL_FORCE_SHOW") == "1"
+open(os.path.join(scripts_dir, "qol_version.js"), "w").write(f'var QOL_VERSION = "{VERSION}";\nvar QOL_DEBUG = {str(DEBUG).lower()};\nvar QOL_FORCE_SHOW = {str(FORCE).lower()};\n')
+for f, out in (("settings.js", "qol_settings.js"), ("clock.js", "qol_clock.js"), ("state.js", "qol_state.js"), ("menu.js", "qol_menu.js"), ("debug.js", "qol_debug.js"), ("visibility.js", "qol_visibility.js")):
     shutil.copy(os.path.join(CORE, f), os.path.join(scripts_dir, out))
 includes, panels, quick, filemods = [], [], [], []
 for name in sorted(os.listdir(MODS)):
@@ -55,4 +57,4 @@ modlock = os.environ.get("MODLOCK", "modlock")
 out = os.path.join(HERE, "dist", "pak57_dir.vpk")
 subprocess.check_call([modlock, "panorama", "compile", SRC, "--addon", "qolhud", "-o", out])
 subprocess.check_call([modlock, "vpk", "list", out])
-print("->", out, "version", VERSION)
+print("->", out, "version", VERSION, "debug" if DEBUG else "", "force_show" if FORCE else "")

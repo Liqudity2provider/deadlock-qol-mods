@@ -53,7 +53,7 @@ var QolTimings = (function () {
 
   function applyPosition() {
     var p = panel("QolTimings"); if (!p) return;
-    if (cfg.position === "top") { p.style.horizontalAlign = "center"; p.style.marginTop = "72px"; p.style.marginLeft = "0px"; }
+    if (cfg.position === "top") { p.style.horizontalAlign = "center"; p.style.marginTop = "150px"; p.style.marginLeft = "0px"; }
     else if (cfg.position === "left") { p.style.horizontalAlign = "left"; p.style.marginTop = "260px"; p.style.marginLeft = "12px"; }
     else { p.style.horizontalAlign = "center"; p.style.marginTop = "420px"; p.style.marginLeft = "0px"; }
   }

@@ -6,7 +6,10 @@
     <include src="s2r://panorama/scripts/qol_version.vjs_c" />
     <include src="s2r://panorama/scripts/qol_settings.vjs_c" />
     <include src="s2r://panorama/scripts/qol_clock.vjs_c" />
+    <include src="s2r://panorama/scripts/qol_state.vjs_c" />
     <include src="s2r://panorama/scripts/qol_menu.vjs_c" />
+    <include src="s2r://panorama/scripts/qol_debug.vjs_c" />
+    <include src="s2r://panorama/scripts/qol_visibility.vjs_c" />
 <!-- MODULE_SCRIPTS -->
   </scripts>
 
@@ -23,7 +26,7 @@
     </Panel>
 
     <!-- settings menu -->
-    <Panel id="QolMenu" hittest="true" style="visibility: collapse; horizontal-align: center; vertical-align: center; width: 640px; height: fit-children; padding: 0px; background-color: #0d0b0bf2; border: 1px solid #f0a13266; border-radius: 12px; flow-children: down; box-shadow: #000000aa 0px 0px 40px 0px;">
+    <Panel id="QolMenu" hittest="true" style="visibility: collapse; horizontal-align: center; vertical-align: top; margin-top: 170px; width: 640px; height: fit-children; padding: 0px; background-color: #0d0b0bf2; border: 1px solid #f0a13266; border-radius: 12px; flow-children: down; box-shadow: #000000aa 0px 0px 40px 0px;">
       <Panel style="flow-children: right; width: 100%; padding: 14px 16px 10px 16px; border-bottom: 1px solid #2a2523;">
         <Panel style="width: 10px; height: 10px; border-radius: 5px; background-color: #f0a132; vertical-align: center; margin-right: 10px; box-shadow: #f0a132 0px 0px 12px 0px;" />
         <Label text="QoL HUD" hittest="false" style="font-size: 18px; color: #efe9e3; font-weight: bold; vertical-align: center; letter-spacing: 1px;" />
@@ -34,5 +37,7 @@
     </Panel>
 
 <!-- MODULE_PANELS -->
+
+    <Label id="QolDebugText" text="" hittest="false" style="horizontal-align: left; vertical-align: top; margin-top: 330px; margin-left: 4px; font-size: 13px; color: #7bd389; background-color: #000000c0; padding: 4px; font-family: monospace; white-space: normal; width: 900px;" />
   </Panel>
 </root>
