@@ -1,0 +1,3 @@
+# one vsnd path per line, found with `snd_showstart 3` while holding heavy melee. Examples (UNVERIFIED):
+# sounds/weapons/melee/heavy_windup_01.vsnd
+# sounds/heroes/haze/haze_melee_heavy_charge.vsnd
