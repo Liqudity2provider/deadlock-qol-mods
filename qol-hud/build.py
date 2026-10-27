@@ -44,6 +44,8 @@ for name in sorted(os.listdir(MODS)):
                     os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copy(os.path.join(rootdir, fn), dst); n += 1
         if kind != "hud": filemods.append({"id": m["id"], "kind": kind, "name": m.get("name", m["id"]), "description": m.get("description", ""), "files": n})
         print(f"assets: {m['id']} ({n} files)")
+    elif m.get("listed") and kind != "hud":
+        filemods.append({"id": m["id"], "kind": kind, "name": m.get("name", m["id"]), "description": m.get("description", ""), "files": 1})
     print("module:", m["id"], f"[{kind}]")
 # file mods register themselves for the menu (informational cards)
 reg = "".join(f'QolRegistry.register({json.dumps({k: v for k, v in fm.items() if k != "files"})});\n' for fm in filemods if fm["files"] > 0)

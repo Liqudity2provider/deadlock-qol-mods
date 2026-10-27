@@ -1,1 +1,1 @@
-{ "disabled": [], "debug": false, "force_show": false }
+{"disabled": ["ult_sound_harrow", "credits_skins"], "debug": false, "force_show": false}
