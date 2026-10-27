@@ -1,6 +1,6 @@
 // Hide every QoL panel outside live matches (menu, dashboard, hideout). The debug label stays visible.
 var QolVisibility = (function () {
-  var PANELS = ["QolQuick", "QolTimings", "QolUlts", "QolRoutes", "QolParry"];
+  var PANELS = ["QolQuick", "QolTimings", "QolRoutes", "QolParry"];
   var last = null;
   function root() { var r = $.GetContextPanel(); while (r && r.GetParent()) r = r.GetParent(); return r; }
   function loop() {

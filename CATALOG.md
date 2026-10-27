@@ -10,7 +10,6 @@ no memory, no network: everything below respects that. ✅ built · 🔧 scaffol
 | ✅ | Timings | next-15 s strip + list: urn, bridge buff, camps, crates, mid, rift, waves; S/M/L/Sin/Mid/Box marks | tested in-game, reads the real match clock |
 | ✅ | Box routes | crate clusters from the real map entities, numbered pickup order over the minimap | tested in-game, pixel-exact placement |
 | ✅ | Parry timer | 0.75 s window + cooldown, triggered by the game's own parry indicator | tested in-game |
-| ✅ | Enemy ult tracker | 6 rows, click when an enemy ults → countdown from base ult CD; right-click sets hero | renders in-game; roster auto-read is best effort |
 | 💡 | Souls/min | SPM and net-worth delta vs lane opponent from the top bar numbers | pure label math |
 | 💡 | Deny/last-hit counter | your lane CS from the scoreboard, pace vs par (e.g. 60 by 10:00) | |
 | 💡 | Death timer + buyback-style hints | respawn countdown bigger, "what's up when you're back" | reads `respawn_timer` |

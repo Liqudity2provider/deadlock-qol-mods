@@ -1,7 +1,7 @@
 # Deadlock QoL mods
 
 
-Client-side, file-based mods for Deadlock, tested in-game (build 6821): one VPK, a folder of modules, an in-game ⚙ menu (timings, real box routes on the minimap, parry timer, enemy ult tracker), a heavy-melee cue and hero skins, all built without Valve tools.
+Client-side, file-based mods for Deadlock, tested in-game (build 6821): one VPK, a folder of modules, an in-game ⚙ menu (timings, real box routes on the minimap, parry timer), a heavy-melee cue and hero skins, all built without Valve tools.
 **Install:** download `Install-QoL-HUD.bat` from [Releases](../../releases/latest), double-click, press 1. **Menu:** in a match open the shop (B) to free the cursor, click the orange "mods" button top right.
 Two file-based mods for the vanilla Deadlock client. They override files through the `citadel/addons` search path:
 no injection, no memory reads, nothing touches the process. Valve has published no policy on such mods; in practice
@@ -9,7 +9,7 @@ cosmetic/HUD/sound VPKs are widespread and no bans are known. Use at your own ri
 
 | Mod | What | Build | Status |
 |---|---|---|---|
-| [qol-hud](qol-hud) | **One VPK, one folder of modules, one ⚙ menu in-game.** HUD modules toggle live: Timings, Box routes, Parry timer, Enemy ult tracker. Sound/skin modules are baked in and listed in the menu. Drop a folder into `modules/` to add one. | `modlock` on macOS/Linux/Windows, no Valve tools for HUD; CSDK for sounds/skins | compiles; **not yet run in-game** |
+| [qol-hud](qol-hud) | **One VPK, one folder of modules, one ⚙ menu in-game.** HUD modules toggle live: Timings, Box routes, Parry timer. Sound/skin modules are baked in and listed in the menu. Drop a folder into `modules/` to add one. | `modlock` on macOS/Linux/Windows, no Valve tools for HUD; CSDK for sounds/skins | compiles; **not yet run in-game** |
 | [qol-hud/modules/heavy_melee_sound](qol-hud/modules/heavy_melee_sound) | Louder, sharper heavy-melee wind-up so you parry on reaction. | Windows + Reduced CSDK 12 + ffmpeg | recipe + scripts; needs the sound paths found in-game |
 
 Ideas backlog with what is and isn't possible client-side: [CATALOG.md](CATALOG.md).

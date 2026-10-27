@@ -1,1 +1,0 @@
-{ "id": "ults", "kind": "hud", "name": "Enemy ult tracker", "scripts": ["cooldowns.js", "module.js"], "panel": "panel.xml" }

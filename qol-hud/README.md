@@ -9,7 +9,6 @@ core/                        settings store, module registry, menu, match clock,
 modules/timings/             upcoming objectives strip + marks (S/M/L/Sin/Mid/Box buttons)        [hud]
 modules/routes/              box routes as numbered dots over the minimap                          [hud]
 modules/parry/               parry window + cooldown bar under the crosshair                       [hud]
-modules/ults/                enemy ult tracker: 6 rows, click when used                            [hud]
 modules/heavy_melee_sound/   louder heavy-melee wind-up (compiled sounds in assets/)               [sound]
 modules/_example_skin/       template for texture/model replacements                              [skin]
 config.json                  {"disabled": [...]} build-time switch; VERSION shown in the menu
