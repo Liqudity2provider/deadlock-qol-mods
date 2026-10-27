@@ -247,7 +247,7 @@ function Do-Install {
   if ($ch.Count -gt 0) { foreach ($c in $ch) { Ok ("gameinfo.gi: " + $c) }; Ok "backup: gameinfo.gi.qolhud.bak" } else { Ok "gameinfo.gi already set up for addons" }
   # the engine drops an empty 'rpt' folder into addons when it crashes on startup; clean it
   $rpt = Join-Path $addons "rpt"
-  if ((Test-Path $rpt) -and -not (Get-ChildItem -Force $rpt)) { Remove-Item -Force $rpt; Ok "removed empty crash folder addons\rpt" }
+  if ((Test-Path $rpt) -and -not (Get-ChildItem -Recurse -Force -File $rpt)) { Remove-Item -Recurse -Force $rpt; Ok "removed empty crash folder addons\rpt" }
 
   Step "Verifying"
   if ((Get-Sha256 $dest) -eq $hash) { Ok "installed file matches" } else { Bad "installed file differs from download" }
