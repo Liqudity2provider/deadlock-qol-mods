@@ -1,0 +1,1 @@
+{ "id": "timings", "scripts": ["schedule.js", "module.js"], "panel": "panel.xml", "quick": "quick.xml" }

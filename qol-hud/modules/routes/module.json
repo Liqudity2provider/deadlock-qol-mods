@@ -1,0 +1,1 @@
+{ "id": "routes", "scripts": ["module.js"], "panel": "panel.xml", "quick": "quick.xml" }

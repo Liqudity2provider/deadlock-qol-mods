@@ -7,7 +7,7 @@ var QolRoutes = (function () {
     { id: "right", name: "Right lane boxes", color: "#f06a5a", pts: [[0.84, 0.78], [0.86, 0.66], [0.80, 0.58], [0.85, 0.48], [0.78, 0.40]] },
   ];
   var idx = -1;            // -1 = off
-  var dots = [];
+  var dots = [], enabled = true, dotSize = 10, showNumbers = true;
 
   function root() { var r = $.GetContextPanel(); while (r && r.GetParent()) r = r.GetParent(); return r; }
   function hud() { var r = root(); return r ? r.FindChildTraverse("Hud") : null; }
@@ -30,7 +30,7 @@ var QolRoutes = (function () {
     var label = root() ? root().FindChildTraverse("QolRoutesLabel") : null;
     if (!overlay) return;
     clear();
-    if (idx < 0) { overlay.style.visibility = "collapse"; if (label) label.text = "routes: off"; return; }
+    if (idx < 0 || !enabled) { overlay.style.visibility = "collapse"; if (label) label.text = "routes: off"; return; }
     var rect = minimapRect();
     if (!rect || rect.w < 10) { if (label) label.text = "routes: no minimap"; $.Schedule(1.0, draw); return; }
     var r = ROUTES[idx];
@@ -42,20 +42,32 @@ var QolRoutes = (function () {
     r.pts.forEach(function (pt, i) {
       var d = $.CreatePanel("Panel", overlay, "QolDot" + i);
       d.hittest = false;
-      d.style.position = Math.round(pt[0] * rect.w - 5) + "px " + Math.round(pt[1] * rect.h - 5) + "px 0px";
-      d.style.width = "10px"; d.style.height = "10px"; d.style.borderRadius = "5px";
+      d.style.position = Math.round(pt[0] * rect.w - dotSize / 2) + "px " + Math.round(pt[1] * rect.h - dotSize / 2) + "px 0px";
+      d.style.width = dotSize + "px"; d.style.height = dotSize + "px"; d.style.borderRadius = (dotSize / 2) + "px";
       d.style.backgroundColor = r.color; d.style.border = "1px solid #000000";
+      dots.push(d);
+      if (!showNumbers) return;
       var n = $.CreatePanel("Label", overlay, "QolDotN" + i);
       n.hittest = false; n.text = String(i + 1);
       n.style.position = Math.round(pt[0] * rect.w + 6) + "px " + Math.round(pt[1] * rect.h - 8) + "px 0px";
       n.style.fontSize = "10px"; n.style.color = "#ffffff"; n.style.textShadow = "1px 1px 1px 1.0 #000000";
-      dots.push(d); dots.push(n);
+      dots.push(n);
     });
     // calibration help: print the minimap rect once per draw so coordinates can be tuned
     $.Msg("[QolRoutes] minimap rect x=" + rect.x + " y=" + rect.y + " w=" + rect.w + " h=" + rect.h);
   }
 
-  function cycle() { idx = idx + 1 >= ROUTES.length ? -1 : idx + 1; draw(); }
+  function cycle() { idx = idx + 1 >= ROUTES.length ? -1 : idx + 1; QolSettings.set("routes", "lastRoute", idx); draw(); }
+  QolRegistry.register({
+    id: "routes", name: "Box routes", description: "numbered dots over the minimap",
+    settings: [
+      { key: "dotSize", label: "dot size", type: "number", def: 10, min: 6, max: 18, step: 2 },
+      { key: "numbers", label: "show numbers", type: "bool", def: true },
+      { key: "remember", label: "remember last route", type: "bool", def: true },
+    ],
+    onChange: function (k, v) { if (k === "dotSize") dotSize = v; if (k === "numbers") showNumbers = v; if (k === "remember" && v) { var r = QolSettings.get("routes", "lastRoute", -1); if (typeof r === "number") idx = r; } draw(); },
+    setEnabled: function (on) { enabled = on; draw(); },
+  });
   // redraw periodically: the minimap moves/scales when the shop or scoreboard opens
   function tick() { if (idx >= 0) draw(); $.Schedule(2.0, tick); }
   $.Schedule(2.0, tick);

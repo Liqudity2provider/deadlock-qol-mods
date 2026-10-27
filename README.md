@@ -1,7 +1,7 @@
 # Deadlock QoL mods
 
 
-Client-side, file-based mods for Deadlock: a HUD with upcoming-timings strip + box routes on the minimap, and a louder heavy-melee cue.
+Client-side, file-based mods for Deadlock: a modular HUD with an in-game settings menu (upcoming timings, box routes on the minimap) and a louder heavy-melee cue.
 Download the ready VPK from [Releases](../../releases). Build from source with [modlock](https://github.com/paralin/modlock).
 Two file-based mods for the vanilla Deadlock client. They override files through the `citadel/addons` search path:
 no injection, no memory reads, nothing touches the process. Valve has published no policy on such mods; in practice
@@ -9,7 +9,7 @@ cosmetic/HUD/sound VPKs are widespread and no bans are known. Use at your own ri
 
 | Mod | What | Build | Status |
 |---|---|---|---|
-| [qol-hud](qol-hud) | **Timings strip**: what happens in the next 15 s (urn, bridge buff, camps, crates, mid, waves) + next-5 list, with one-click marks for things the clock can't know (camp cleared, mid killed). **Box routes**: numbered dots over the minimap, cycle lanes. | `modlock` on macOS/Linux/Windows, no Valve tools (inline styles only, no CSS) | compiles; **not yet run in-game** |
+| [qol-hud](qol-hud) | Modular HUD with an **in-game ⚙ settings menu** (modules on/off, options, persisted). Modules: **Timings** (next 15 s strip + list + camp/mid marks), **Box routes** (numbered dots over the minimap). Drop a folder into `modules/` to add one. | `modlock` on macOS/Linux/Windows, no Valve tools | compiles; **not yet run in-game** |
 | [heavy-melee-sound](heavy-melee-sound) | Louder, sharper heavy-melee wind-up so you parry on reaction. | Windows + Reduced CSDK 12 + ffmpeg | recipe + scripts; needs the sound paths found in-game |
 
 ## Install (both)

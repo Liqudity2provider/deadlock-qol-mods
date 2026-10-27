@@ -1,0 +1,1 @@
+        <Button onactivate="QolRoutes.cycle()" style="width: 70px; height: 20px; margin: 1px; background-color: #1a1716; border: 1px solid #2a2523;"><Label id="QolRoutesLabel" text="routes: off" style="font-size: 10px; color: #4fd1c5; horizontal-align: center; vertical-align: center;" /></Button>
