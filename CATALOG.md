@@ -44,7 +44,10 @@ no memory, no network: everything below respects that. ✅ built · 🔧 scaffol
 ## Skins & visuals (baked)
 | | Pack | What |
 |---|---|---|
-| 🔧 | Example skin template | folder + workflow |
+| ✅ | Shiv: Neon | purple jacket, lilac trims (tested in-game) |
+| ✅ | Vindicta: Frost | icy blue coat (tested in-game) |
+| ✅ | Rat King: Gold | golden cloak, gilded armour (tested in-game) |
+| 🔧 | Example skin template | folder + workflow; `tools/vtex.py recolor` / `replace` |
 | 💡 | High-contrast enemy recolors | bright hero textures for enemies (only if enemy/ally materials differ; otherwise per-hero) |
 | 💡 | Clean item icons | flat, high-contrast item icons in shop/HUD |
 | 💡 | Minimap hero icons | bigger, readable icons |

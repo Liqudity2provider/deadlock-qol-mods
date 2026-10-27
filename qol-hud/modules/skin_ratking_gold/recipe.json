@@ -1,0 +1,3 @@
+{ "source": "pak01_dir.vpk", "textures": [
+  { "path": "models/heroes_wip/ratking/materials/ratking_cloak_color_png_c467d974.vtex_c", "args": ["--hue-from", "320", "--hue-to", "30", "--hue", "45", "--sat", "1.5", "--val", "1.45"] },
+  { "path": "models/heroes_wip/ratking/materials/ratking_armor_color_png_be02002.vtex_c", "args": ["--tint", "#e0b040", "--tint-amount", "0.45", "--val", "1.15"] } ] }

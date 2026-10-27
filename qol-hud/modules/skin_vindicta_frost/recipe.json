@@ -1,0 +1,2 @@
+{ "source": "pak01_dir.vpk", "textures": [
+  { "path": "models/heroes_staging/vindicta/materials/vindicta_dress_color_png_a192a2cd.vtex_c", "args": ["--hue-from", "300", "--hue-to", "40", "--hue", "225", "--sat", "1.1", "--val", "1.6"] } ] }

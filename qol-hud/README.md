@@ -16,6 +16,8 @@ config.json                  {"disabled": [...]} build-time switch; VERSION show
 build.py                     assembles core + modules -> src/ -> dist/pak57_dir.vpk (modlock)
 tools/vsnd.py                any audio -> Deadlock .vsnd_c using the original game file as template (no CSDK)
 tools/gen_routes.py          map entity lump -> modules/routes/routes_data.js
+tools/vtex.py                recolor / replace BC7 textures (.vtex_c) without Valve tools
+tools/make_skins.py          rebuild all skin_* modules from game files via their recipe.json
 ```
 
 ## Making a sound module (no Valve tools)

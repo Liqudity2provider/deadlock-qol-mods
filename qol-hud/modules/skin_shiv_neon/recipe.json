@@ -1,0 +1,3 @@
+{ "source": "pak01_dir.vpk", "textures": [
+  { "path": "models/heroes_staging/shiv/materials/shiv_jacket1_color_png_e740a337.vtex_c", "args": ["--hue", "250", "--sat", "1.7", "--val", "1.15"] },
+  { "path": "models/heroes_staging/shiv/materials/shiv_legs1_color_png_6c8be95e.vtex_c", "args": ["--hue", "250", "--sat", "1.7", "--val", "1.15"] } ] }
