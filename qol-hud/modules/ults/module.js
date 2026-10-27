@@ -51,7 +51,7 @@ var QolUlts = (function () {
 
   function render() {
     var box = find("QolUlts");
-    if (!enabled || !box) { if (box) box.style.visibility = "collapse"; $.Schedule(0.25, render); return; }
+    if (!enabled || !box || !QolState.inMatch()) { if (box) box.style.visibility = "collapse"; $.Schedule(0.25, render); return; }
     box.style.visibility = "visible";
     if (!slots[0].row || !slots[0].row.IsValid()) build();
     slots.forEach(function (s, i) {
@@ -65,7 +65,7 @@ var QolUlts = (function () {
   }
 
   QolRegistry.register({
-    id: "ults", name: "Enemy ult tracker", description: "click a row when an enemy ults; right-click sets the hero",
+    id: "ults", name: "Enemy ult tracker", description: "off by default: click a row (shop open) when an enemy ults; right-click sets the hero", defaultEnabled: false,
     settings: [
       { key: "autoRoster", label: "read heroes from HUD", type: "bool", def: true },
       { key: "compact", label: "compact rows", type: "bool", def: false },

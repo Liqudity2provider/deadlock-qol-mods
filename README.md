@@ -2,7 +2,7 @@
 
 
 Client-side, file-based mods for Deadlock, tested in-game (build 6821): one VPK, a folder of modules, an in-game ⚙ menu (timings, real box routes on the minimap, parry timer, enemy ult tracker), a heavy-melee cue and hero skins, all built without Valve tools.
-**Install:** download `Install-QoL-HUD.bat` from [Releases](../../releases/latest), double-click, press 1.
+**Install:** download `Install-QoL-HUD.bat` from [Releases](../../releases/latest), double-click, press 1. **Menu:** in a match open the shop (B) to free the cursor, click the orange "mods" button top right.
 Two file-based mods for the vanilla Deadlock client. They override files through the `citadel/addons` search path:
 no injection, no memory reads, nothing touches the process. Valve has published no policy on such mods; in practice
 cosmetic/HUD/sound VPKs are widespread and no bans are known. Use at your own risk.

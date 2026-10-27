@@ -18,11 +18,11 @@ var QolRegistry = (function () {
     if (!spec.kind) spec.kind = "hud";
     mods.push(spec);
     if (spec.kind !== "hud") return;   // file mods are always on while packed
-    var on = QolSettings.get(spec.id, "enabled", true);
+    var on = QolSettings.get(spec.id, "enabled", spec.defaultEnabled !== false);
     if (spec.setEnabled) spec.setEnabled(on);
     (spec.settings || []).forEach(function (s) { var v = QolSettings.get(spec.id, s.key, s.def); if (spec.onChange) spec.onChange(s.key, v); });
   }
-  function enabled(id) { return QolSettings.get(id, "enabled", true); }
+  function enabled(id) { var m = mods.filter(function (x) { return x.id === id; })[0]; return QolSettings.get(id, "enabled", !(m && m.defaultEnabled === false)); }
   function setEnabled(id, on) { QolSettings.set(id, "enabled", on); mods.forEach(function (m) { if (m.id === id && m.setEnabled) m.setEnabled(on); }); }
   function value(id, key) { var m = mods.filter(function (x) { return x.id === id; })[0]; var s = m && (m.settings || []).filter(function (x) { return x.key === key; })[0]; return QolSettings.get(id, key, s ? s.def : undefined); }
   function setValue(id, key, v) { QolSettings.set(id, key, v); mods.forEach(function (m) { if (m.id === id && m.onChange) m.onChange(key, v); }); }
