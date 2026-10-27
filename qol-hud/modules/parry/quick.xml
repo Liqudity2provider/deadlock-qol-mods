@@ -1,0 +1,1 @@
+        <Button onactivate="QolParry.manual()" style="width: 34px; height: 20px; margin: 1px; background-color: #1a1716; border: 1px solid #2a2523;"><Label text="F" style="font-size: 11px; color: #c084fc; horizontal-align: center; vertical-align: center;" /></Button>

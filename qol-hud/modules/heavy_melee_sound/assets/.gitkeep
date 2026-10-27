@@ -1,0 +1,2 @@
+Put compiled sounds here at their original paths, e.g. sounds/weapons/melee/heavy_windup_01.vsnd_c
+(see ../README.md and build.ps1). build.ps1 -Out assets/ writes them here directly.

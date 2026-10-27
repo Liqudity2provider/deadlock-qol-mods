@@ -22,7 +22,14 @@ CSDK, and the event names are not in any public doc, so we go the file-replaceme
 Source 2 Viewer → open `Deadlock/game/citadel/pak01_dir.vpk` → navigate to each path from `sounds.txt` →
 right click → *Decompile & export* → you get `.wav` files. Put them in `original/` keeping the folder structure.
 
-## 3. Make them loud and sharp
+## 3. Pick the replacement sound
+`source/heavy_windup.wav` is the current candidate (1.07 s, leading silence trimmed so it starts instantly, +6 dB,
+high shelf +3 dB at 3 kHz, limiter). `./prepare.sh` copies it to every path from `sounds.txt` into `boosted/`.
+`./prepare.sh my_sound.ogg` swaps in another file with the same trim/boost treatment.
+
+Keep the length close to the original wind-up: the game cuts the sound when the lunge starts.
+
+## 3b. Or boost the originals instead
 ```bash
 ./boost.sh original/ boosted/     # ffmpeg: +9 dB, high-shelf +4 dB at 3 kHz, limiter, trims leading silence
 ```
@@ -31,7 +38,8 @@ expects the wind-up to end when the lunge starts.
 
 ## 4. Compile and pack (Windows, CSDK 12)
 ```powershell
-.\build.ps1 -Csdk "D:\Reduced_CSDK_12" -Out dist\pak58_dir.vpk
+.\build.ps1 -Csdk "D:\Reduced_CSDK_12"                      # -> assets/ (packed by qol-hud/build.sh into the main VPK)
+.\build.ps1 -Csdk "D:\Reduced_CSDK_12" -Out dist\pak58_dir.vpk   # or a standalone sound pack
 ```
 The script copies `boosted/` into a CSDK addon's `content/` tree at the original paths, runs
 `resourcecompiler.exe` on every wav, collects the `.vsnd_c` output and packs `pak58_dir.vpk` with `CSDKCfgVPK.exe`

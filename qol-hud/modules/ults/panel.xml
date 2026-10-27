@@ -1,0 +1,4 @@
+    <Panel id="QolUlts" hittest="true" style="horizontal-align: left; vertical-align: top; margin-top: 200px; margin-left: 10px; flow-children: down; width: fit-children; height: fit-children; opacity: 0.9;">
+      <Label text="enemy ults  (click when used)" hittest="false" style="font-size: 10px; color: #a39b93; margin-bottom: 2px;" />
+      <Panel id="QolUltRows" style="flow-children: down; width: fit-children; height: fit-children;" />
+    </Panel>

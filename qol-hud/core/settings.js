@@ -13,9 +13,11 @@ var QolSettings = (function () {
 
 var QolRegistry = (function () {
   var mods = [];
-  // spec: { id, name, description, settings: [{key, label, type: 'bool'|'number'|'enum', def, min, max, step, options}], onChange(key, value), setEnabled(bool) }
+  // spec: { id, kind: 'hud'|'sound'|'skin', name, description, settings: [{key, label, type: 'bool'|'number'|'enum', def, min, max, step, options}], onChange(key, value), setEnabled(bool) }
   function register(spec) {
+    if (!spec.kind) spec.kind = "hud";
     mods.push(spec);
+    if (spec.kind !== "hud") return;   // file mods are always on while packed
     var on = QolSettings.get(spec.id, "enabled", true);
     if (spec.setEnabled) spec.setEnabled(on);
     (spec.settings || []).forEach(function (s) { var v = QolSettings.get(spec.id, s.key, s.def); if (spec.onChange) spec.onChange(s.key, v); });

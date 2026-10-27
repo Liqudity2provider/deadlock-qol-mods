@@ -2,7 +2,7 @@ param(
   [Parameter(Mandatory=$true)][string]$Csdk,          # e.g. D:\Reduced_CSDK_12
   [string]$Addon = "heavymelee",
   [string]$Boosted = "boosted",
-  [string]$Out = "dist\pak58_dir.vpk"
+  [string]$Out = "assets"   # directory: write compiled .vsnd_c here for the qol-hud build; or a .vpk path for a standalone pack
 )
 $ErrorActionPreference = "Stop"
 $rc = Join-Path $Csdk "game\bin\win64\resourcecompiler.exe"
@@ -26,10 +26,12 @@ Get-ChildItem -Recurse -File -Filter *.vsnd_c $game | ForEach-Object {
   New-Item -ItemType Directory -Force (Split-Path $dst) | Out-Null
   Copy-Item $_.FullName $dst -Force
 }
-New-Item -ItemType Directory -Force (Split-Path $Out) | Out-Null
-if (Get-Command modlock -ErrorAction SilentlyContinue) {
-  modlock vpk pack $stage -o $Out
+if ($Out -like "*.vpk") {
+  New-Item -ItemType Directory -Force (Split-Path $Out) | Out-Null
+  if (Get-Command modlock -ErrorAction SilentlyContinue) { modlock vpk pack $stage -o $Out } else { & (Join-Path $Csdk "game\bin\win64\CSDKCfgVPK.exe") $stage $Out }
+  Write-Host "-> $Out  (standalone pack; copy to Deadlock\game\citadel\addons\)"
 } else {
-  & (Join-Path $Csdk "game\bin\win64\CSDKCfgVPK.exe") $stage $Out
+  New-Item -ItemType Directory -Force $Out | Out-Null
+  Copy-Item -Recurse -Force (Join-Path $stage "*") $Out
+  Write-Host "-> $Out  (now run qol-hud/build.sh to pack it into pak57_dir.vpk with the HUD)"
 }
-Write-Host "-> $Out  (copy to Deadlock\game\citadel\addons\)"

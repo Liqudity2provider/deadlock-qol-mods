@@ -1,0 +1,6 @@
+    <Panel id="QolParry" hittest="false" style="horizontal-align: center; vertical-align: center; margin-top: 90px; flow-children: down; width: 180px; height: fit-children; visibility: collapse;">
+      <Label id="QolParryText" text="" hittest="false" style="font-size: 14px; color: #efe9e3; horizontal-align: center; text-shadow: 1px 1px 2px 1.0 #000000; font-weight: bold;" />
+      <Panel id="QolParryTrack" hittest="false" style="width: 180px; height: 6px; margin-top: 3px; background-color: #0b0a0ac0; border: 1px solid #ffffff33; border-radius: 3px;">
+        <Panel id="QolParryFill" hittest="false" style="width: 100%; height: 100%; background-color: #7bd389; border-radius: 3px;" />
+      </Panel>
+    </Panel>

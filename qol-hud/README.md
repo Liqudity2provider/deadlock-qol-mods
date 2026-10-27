@@ -5,11 +5,19 @@ playing; settings persist between matches when the game exposes `$.persistentSto
 the menu says so and settings last for the session).
 
 ```
-core/                 settings store, module registry, menu, match clock, base_hud template
-modules/timings/      upcoming objectives strip + marks (S/M/L/Sin/Mid/Box buttons)
-modules/routes/       box routes as numbered dots over the minimap
-build.py              assembles core + modules -> src/ -> dist/pak57_dir.vpk (modlock)
+core/                        settings store, module registry, menu, match clock, base_hud template
+modules/timings/             upcoming objectives strip + marks (S/M/L/Sin/Mid/Box buttons)        [hud]
+modules/routes/              box routes as numbered dots over the minimap                          [hud]
+modules/parry/               parry window + whiff cooldown bar under the crosshair                 [hud]
+modules/ults/                enemy ult tracker: 6 rows, click when used                            [hud]
+modules/heavy_melee_sound/   louder heavy-melee wind-up (compiled sounds in assets/)               [sound]
+modules/_example_skin/       template for texture/model replacements                              [skin]
+config.json                  {"disabled": [...]} build-time switch; VERSION shown in the menu
+build.py                     assembles core + modules -> src/ -> dist/pak57_dir.vpk (modlock)
 ```
+
+The menu has tabs All / HUD / Sounds / Skins. HUD cards have an ON/OFF pill and settings rows; sound and skin
+cards are informational (they are files inside the VPK, so changing them means rebuilding and restarting).
 
 ## Build
 ```bash
@@ -18,7 +26,9 @@ build.py              assembles core + modules -> src/ -> dist/pak57_dir.vpk (mo
 
 ## Writing a module
 Create `modules/<name>/` with:
-- `module.json` — `{ "id": "name", "scripts": ["module.js"], "panel": "panel.xml", "quick": "quick.xml" }`
+- `module.json` — `{ "id": "name", "kind": "hud", "name": "…", "description": "…", "scripts": ["module.js"], "panel": "panel.xml", "quick": "quick.xml" }`
+  For sounds/skins: `{ "id": "x", "kind": "sound", "name": "…", "description": "…", "assets": "assets" }` and put compiled
+  game files under `assets/` at their original paths; no JS needed.
 - `module.js` — register once:
   ```js
   QolRegistry.register({
