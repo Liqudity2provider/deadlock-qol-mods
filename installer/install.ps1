@@ -98,11 +98,12 @@ function Get-Sha256([string]$path) { return (Get-FileHash -Algorithm SHA256 -Pat
 # becomes the MOD and default write path, so a bare "Game citadel/addons" makes the engine look for
 # cfg/user_keys_default.vcfg inside addons and abort: "Unable to read default keybinding configuration".
 # So we always add Mod/Write for citadel and core (tagged "// qolhud" so uninstall removes exactly our lines).
+# Values may be quoted (e.g. Sqooky's OptimizationLock gameinfo.gi writes Game "citadel/addons"): count those as present.
 $Tag_ = "// qolhud"
-function Test-AddonsLine([string]$gi) { return [regex]::IsMatch((Get-Content -Raw $gi), '(?m)^\s*Game\s+citadel/addons\b') }
+function Test-AddonsLine([string]$gi) { return [regex]::IsMatch((Get-Content -Raw $gi), '(?m)^\s*Game\s+"?citadel/addons\b') }
 function Test-ModWrite([string]$gi) {
   $t = Get-Content -Raw $gi
-  return ([regex]::IsMatch($t, '(?m)^\s*Mod\s+citadel\b') -and [regex]::IsMatch($t, '(?m)^\s*Write\s+citadel\b'))
+  return ([regex]::IsMatch($t, '(?m)^\s*Mod\s+"?citadel\b') -and [regex]::IsMatch($t, '(?m)^\s*Write\s+"?citadel\b'))
 }
 function Test-SearchPaths([string]$gi) { return ((Test-AddonsLine $gi) -and (Test-ModWrite $gi)) }
 
@@ -116,13 +117,13 @@ function Add-AddonsLine([string]$gi) {
   $m = $rx.Match($text)
   if (-not $m.Success) { throw "SearchPaths block not found in gameinfo.gi (format changed?)" }
   $indent = $m.Groups[2].Value; if (-not $indent) { $indent = "`t`t`t" }
-  if (-not [regex]::IsMatch($text, '(?m)^\s*Game\s+citadel/addons\b')) {
+  if (-not [regex]::IsMatch($text, '(?m)^\s*Game\s+"?citadel/addons\b')) {
     $text = $rx.Replace($text, ('$1' + $indent + $AddonsLine + $nl + '$2'), 1)
     [void]$changes.Add("added 'Game citadel/addons'")
   }
   $need = @()
   foreach ($kv in @(@("Mod", "citadel"), @("Write", "citadel"), @("Mod", "core"), @("Write", "core"))) {
-    if (-not [regex]::IsMatch($text, ('(?m)^\s*' + $kv[0] + '\s+' + $kv[1] + '\b'))) { $need += ,$kv }
+    if (-not [regex]::IsMatch($text, ('(?m)^\s*' + $kv[0] + '\s+"?' + $kv[1] + '\b'))) { $need += ,$kv }
   }
   if ($need.Count -gt 0) {
     $block = ""
@@ -130,7 +131,7 @@ function Add-AddonsLine([string]$gi) {
     # after the last "Game core" line if present (where Valve used to keep them), else after the addons line
     $anchor = [regex]::Matches($text, '(?m)^[ \t]*Game[ \t]+core[ \t]*(//[^\r\n]*)?\r?\n')
     if ($anchor.Count -gt 0) { $a = $anchor[$anchor.Count - 1]; $pos = $a.Index + $a.Length }
-    else { $a = [regex]::Match($text, '(?m)^[ \t]*Game[ \t]+citadel/addons[^\r\n]*\r?\n'); $pos = $a.Index + $a.Length }
+    else { $a = [regex]::Match($text, '(?m)^[ \t]*Game[ \t]+"?citadel/addons[^\r\n]*\r?\n'); $pos = $a.Index + $a.Length }
     $text = $text.Insert($pos, $block)
     [void]$changes.Add("added Mod/Write paths (" + (($need | ForEach-Object { $_[0] + " " + $_[1] }) -join ", ") + ")")
   }
