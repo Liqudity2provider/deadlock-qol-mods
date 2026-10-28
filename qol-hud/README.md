@@ -8,7 +8,7 @@ the menu says so and settings last for the session).
 core/                        settings store, module registry, menu, match clock, base_hud template
 modules/timings/             upcoming objectives strip + marks (S/M/L/Sin/Mid/Box buttons)        [hud]
 modules/routes/              box routes as numbered dots over the minimap                          [hud]
-modules/parry/               parry window + cooldown bar under the crosshair                       [hud]
+modules/parry/               parry window + cooldown countdown under the crosshair (knows Rebuttal) [hud]
 modules/heavy_melee_sound/   louder heavy-melee wind-up (compiled sounds in assets/)               [sound]
 modules/_example_skin/       template for texture/model replacements                              [skin]
 config.json                  {"disabled": [...]} build-time switch; VERSION shown in the menu
@@ -78,7 +78,8 @@ Run in real Deadlock (hideout, sandbox, local bot match on dl_midtown):
 - Timings strip and list match the game clock; menu, tabs, ON/OFF and settings work in-game.
 - Box routes: crate clusters come from the map's entity lump (`tools/gen_routes.py`), placed with the minimap square
   measured from Panorama (`minimap_container` centre + `hud_minimap` size); verified pixel-exact against walker icons.
-- Parry timer triggers on the game's own `#parry_unavailable` panel (appears on parry, hides when ready).
+- Parry timer triggers on the game's own `#parry_unavailable` panel (appears on parry, hides when ready). The countdown
+  assumes 4.6 s, or 2.85 s with Rebuttal (`parryRebuttal` class on an owned item icon), and re-measures every cooldown.
 - Sounds: `tools/vsnd.py` builds `.vsnd_c` without Valve tools; the game plays them (verified with `soundinfo`).
 - Not available in this build's Panorama: persistent storage (settings reset on restart), key binds outside focus.
 - Debug overlay: build with `QOL_DEBUG=1 ./build.sh`.
