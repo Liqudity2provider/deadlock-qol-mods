@@ -1,16 +1,18 @@
 # Deadlock QoL mods
 
 
-Client-side, file-based mods for Deadlock, tested in-game (build 6821): one VPK, a folder of modules, an in-game ⚙ menu (timings, real box routes on the minimap, parry timer), a heavy-melee cue and hero skins, all built without Valve tools. Recommended community skins and their authors: [CREDITS.md](CREDITS.md).
-**Install:** download `Install-QoL-HUD.bat` from [Releases](../../releases/latest), double-click, press 1. **Menu:** in a match open the shop (B) to free the cursor, click the orange "mods" button top right.
+Client-side, file-based mods for Deadlock, tested in-game (build 6821): one VPK, a folder of modules, one in-game menu (timings, real box routes on the minimap, parry timer with Rebuttal, graphics fast/pretty without restart), a loud heavy-melee cue, a big red glow on anyone charging a heavy melee and hero skins, all built without Valve tools. Recommended community skins and their authors: [CREDITS.md](CREDITS.md).
+**Install:** download `Install-QoL-HUD.bat` from [Releases](../../releases/latest), double-click, press 1. **Menu:** Esc → **QOL HUD** (next to QOL Lock's button), or open the shop (B) and click the orange "mods" button top right.
 Two file-based mods for the vanilla Deadlock client. They override files through the `citadel/addons` search path:
 no injection, no memory reads, nothing touches the process. Valve has published no policy on such mods; in practice
 cosmetic/HUD/sound VPKs are widespread and no bans are known. Use at your own risk.
 
 | Mod | What | Build | Status |
 |---|---|---|---|
-| [qol-hud](qol-hud) | **One VPK, one folder of modules, one ⚙ menu in-game.** HUD modules toggle live: Timings, Box routes, Parry timer. Sound/skin modules are baked in and listed in the menu. Drop a folder into `modules/` to add one. | `modlock` on macOS/Linux/Windows, no Valve tools for HUD; CSDK for sounds/skins | compiles; **not yet run in-game** |
-| [qol-hud/modules/heavy_melee_sound](qol-hud/modules/heavy_melee_sound) | Louder, sharper heavy-melee wind-up so you parry on reaction. | Windows + Reduced CSDK 12 + ffmpeg | recipe + scripts; needs the sound paths found in-game |
+| [qol-hud](qol-hud) | **One VPK, one folder of modules, one ⚙ menu in-game.** HUD modules toggle live: Timings, Box routes, Parry timer; quick card with graphics fast/pretty. Sound/FX/skin modules are baked in and listed in the menu. Drop a folder into `modules/` to add one. | `modlock` on macOS/Linux/Windows, no Valve tools | tested in-game (build 6821) |
+| [qol-hud/modules/heavy_melee_sound](qol-hud/modules/heavy_melee_sound) | Louder, sharper heavy-melee wind-up so you parry on reaction. | `tools/vsnd.py` + ffmpeg, `tools/kv3patch.py` | tested in-game |
+| [qol-hud/modules/heavy_melee_glow](qol-hud/modules/heavy_melee_glow) | Big opaque red glow on the hand of anyone charging a heavy melee. | `tools/kv3patch.py` on the game particle | tested in-game |
+| [perf](perf) | `qol_fast` / `qol_pretty` graphics configs (GPL-3.0, from Sqooky's OptimizationLock), measured. | — | tested in-game |
 
 Ideas backlog with what is and isn't possible client-side: [CATALOG.md](CATALOG.md).
 

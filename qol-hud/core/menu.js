@@ -1,9 +1,12 @@
 // In-game settings menu. One card per module: accent bar, name, description, ON/OFF pill, settings rows.
-// File mods (sounds/skins) are listed too, but they are baked into the VPK: the card says "restart to change".
+// File mods (sounds/skins/fx) are listed too, but they are baked into the VPK: the card says "restart to change".
+// One place for everything: the top "Quick" card holds the graphics toggle (console configs qol_fast / qol_pretty, run
+// through the CitadelConCommand event), routes, respawn marks and the optional old quick bar. The menu opens from the
+// "⚙ mods" button or from a "QOL HUD" button we add to the Esc menu (next to QOL Lock's button when it is installed).
 var QolMenu = (function () {
-  var open = false, tab = "all";
+  var open = false, tab = "all", gfx = "", quickBar = false, home = null;
   var C = { bg: "#0d0b0bf2", card: "#161312", line: "#2a2523", fg: "#efe9e3", muted: "#a39b93", accent: "#f0a132", ok: "#7bd389", bad: "#f06a5a", teal: "#4fd1c5", purple: "#c084fc" };
-  var KIND = { hud: { label: "HUD", color: C.accent }, sound: { label: "SOUND", color: C.purple }, skin: { label: "SKIN", color: C.teal } };
+  var KIND = { hud: { label: "HUD", color: C.accent }, sound: { label: "SOUND", color: C.purple }, skin: { label: "SKIN", color: C.teal }, fx: { label: "FX", color: C.bad } };
 
   function find(id) { return QolFind(id); }
 
@@ -55,11 +58,41 @@ var QolMenu = (function () {
     });
   }
 
+  function conCommand(cmd) { try { $.DispatchEvent("CitadelConCommand", cmd); return true; } catch (e) { return false; } }
+  function setGfx(mode) { if (conCommand("exec qol_" + mode)) gfx = mode; build(); }
+  function setQuickBar(on) { quickBar = on; var p = find("QolQuickExtra"); if (p) p.style.visibility = on ? "visible" : "collapse"; build(); }
+
+  function quickCard(body) {
+    var c = mk("Panel", body, { flowChildren: "down", width: "100%", marginTop: "4px", backgroundColor: C.card, border: "1px solid " + C.line, borderRadius: "8px", padding: "8px 10px" });
+    function row(label) {
+      var r = mk("Panel", c, { flowChildren: "right", width: "100%", marginTop: "3px" });
+      mk("Label", r, { fontSize: "11px", color: C.muted, width: "150px", verticalAlign: "center" }, label);
+      return r;
+    }
+    var g = row("graphics");
+    pill(g, "fast", C.ok, 70, function () { setGfx("fast"); }, gfx === "fast");
+    pill(g, "pretty", C.purple, 70, function () { setGfx("pretty"); }, gfx === "pretty");
+    mk("Label", g, { fontSize: "10px", color: C.muted, verticalAlign: "center" }, "shadows, glow, bloom · no restart");
+    if (typeof QolRoutes !== "undefined" && QolRegistry.enabled("routes")) {
+      var lab = find("QolRoutesLabel");
+      pill(row("box route"), (lab ? lab.text.replace("routes: ", "") : "next") + "  ▸", C.teal, 130, function () { QolRoutes.cycle(); build(); }, false);
+    }
+    if (typeof QolTimings !== "undefined" && QolRegistry.enabled("timings")) {
+      var m = row("killed → respawn timer");
+      [["S", "camp_small"], ["M", "camp_medium"], ["L", "camp_large"], ["Sin", "sinner"], ["Mid", "midboss"], ["Box", "crates"]].forEach(function (b) {
+        pill(m, b[0], C.fg, 42, function () { QolTimings.mark(b[1]); }, false);
+      });
+    }
+    var q = row("old quick bar");
+    pill(q, quickBar ? "shown" : "hidden", quickBar ? C.ok : C.muted, 70, function () { setQuickBar(!quickBar); }, false);
+  }
+
   function build() {
     var body = find("QolMenuBody"); if (!body) return;
     body.RemoveAndDeleteChildren();
+    quickCard(body);
     var tabs = mk("Panel", body, { flowChildren: "right", width: "100%", marginBottom: "4px" });
-    [["all", "All"], ["hud", "HUD"], ["sound", "Sounds"], ["skin", "Skins"]].forEach(function (t) {
+    [["all", "All"], ["hud", "HUD"], ["sound", "Sounds"], ["fx", "FX"], ["skin", "Skins"]].forEach(function (t) {
       pill(tabs, t[1], tab === t[0] ? C.accent : C.muted, 64, function () { tab = t[0]; build(); }, tab === t[0]);
     });
     var mods = QolRegistry.all().filter(function (m) { return tab === "all" || (m.kind || "hud") === tab; });
@@ -70,6 +103,31 @@ var QolMenu = (function () {
     mk("Label", foot, { fontSize: "9px", color: C.muted, horizontalAlign: "right" }, "QoL HUD " + (typeof QOL_VERSION !== "undefined" ? QOL_VERSION : ""));
   }
 
-  function toggle() { open = !open; var p = find("QolMenu"); if (!p) return; p.style.visibility = open ? "visible" : "collapse"; if (open) build(); }
-  return { toggle: toggle, rebuild: build };
+  // parent: where the menu should live while open (the Esc menu, so it draws above it and has the cursor), or home.
+  function show(on, parent) {
+    var p = find("QolMenu"); if (!p) return;
+    if (!home) home = p.GetParent();
+    var target = parent || home;
+    if (target && p.GetParent() !== target) p.SetParent(target);
+    open = on; p.style.visibility = on ? "visible" : "collapse"; if (on) build();
+  }
+  function toggle() { show(!open || (home && find("QolMenu").GetParent() !== home), null); }
+
+  // Esc menu button. #SubOptions holds the settings rows in the stock Esc menu and in QOL Lock's copy of it.
+  function escRoot(p) { while (p && p.GetParent() && p.GetParent().id !== "Hud") p = p.GetParent(); return p; }
+  function injectEsc() {
+    var sub = find("SubOptions");
+    if (sub && sub.IsValid() && !sub.FindChildTraverse("QolEscBtn") && (sub.FindChildTraverse("settings") || sub.FindChildTraverse("ModSettingsBtn"))) {
+      var rowP = $.CreatePanel("Panel", sub, "QolEscRow"); rowP.AddClass("SettingsRow");
+      var b = $.CreatePanel("Button", rowP, "QolEscBtn"); b.AddClass("nav_menu_item"); b.AddClass("minor");
+      var l = $.CreatePanel("Label", b, ""); l.AddClass("menuButtonLabel"); l.text = "QOL HUD"; l.style.color = C.accent;
+      var anchor = sub.FindChildTraverse("ModSettingsBtn") || sub.FindChildTraverse("settings");
+      var anchorRow = anchor ? anchor.GetParent() : null;
+      if (anchorRow && anchorRow.GetParent() === sub) sub.MoveChildBefore(rowP, anchorRow);
+      b.SetPanelEvent("onactivate", function () { show(!(open && find("QolMenu").GetParent() !== home), escRoot(sub)); });
+    }
+    $.Schedule(sub && sub.FindChildTraverse("QolEscBtn") ? 5.0 : 1.0, injectEsc);
+  }
+  $.Schedule(2.0, injectEsc);
+  return { toggle: toggle, rebuild: build, show: show };
 })();

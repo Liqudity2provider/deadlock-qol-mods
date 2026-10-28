@@ -16,24 +16,27 @@
   <Panel class="WindowRoot" id="WindowRoot" hittest="false" disallowedstyleflags="hover,descendantfocus" style="width: 100%; height: 100%;">
     <CitadelHud id="Hud" />
 
-    <!-- gear button + the quick bar; every module may add its own buttons into QolQuickBar -->
+    <!-- gear button (+ the optional quick bar); every module may add its own buttons into QolQuickExtra -->
     <Panel id="QolQuick" hittest="true" style="horizontal-align: right; vertical-align: top; margin-top: 150px; margin-right: 8px; flow-children: down; width: fit-children; height: fit-children; opacity: 0.85;">
       <Panel id="QolQuickBar" style="flow-children: right; horizontal-align: right;">
         <Button id="QolGear" onactivate="QolMenu.toggle()" style="width: 46px; height: 20px; margin: 1px; border-radius: 10px; background-color: #f0a13222; border: 1px solid #f0a13288;"><Label text="⚙ mods" style="font-size: 10px; color: #f0a132; horizontal-align: center; vertical-align: center; font-weight: bold;" /></Button>
+        <!-- the old quick bar: hidden by default, everything is also in the menu (toggle "quick bar" there) -->
+        <Panel id="QolQuickExtra" style="flow-children: right; visibility: collapse;">
         <Button id="QolClockSync" onactivate="QolClock.manualStart()" style="width: 44px; height: 20px; margin: 1px; background-color: #1a1716; border: 1px solid #2a2523;"><Label text="0:00" style="font-size: 10px; color: #a39b93; horizontal-align: center; vertical-align: center;" /></Button>
 <!-- MODULE_QUICK -->
+        </Panel>
       </Panel>
     </Panel>
 
     <!-- settings menu -->
-    <Panel id="QolMenu" hittest="true" style="visibility: collapse; horizontal-align: center; vertical-align: top; margin-top: 170px; width: 640px; height: fit-children; padding: 0px; background-color: #0d0b0bf2; border: 1px solid #f0a13266; border-radius: 12px; flow-children: down; box-shadow: #000000aa 0px 0px 40px 0px;">
+    <Panel id="QolMenu" hittest="true" style="visibility: collapse; horizontal-align: center; vertical-align: top; margin-top: 290px; width: 640px; height: fit-children; padding: 0px; background-color: #0d0b0bf2; border: 1px solid #f0a13266; border-radius: 12px; flow-children: down; box-shadow: #000000aa 0px 0px 40px 0px;">
       <Panel style="flow-children: right; width: 100%; padding: 14px 16px 10px 16px; border-bottom: 1px solid #2a2523;">
         <Panel style="width: 10px; height: 10px; border-radius: 5px; background-color: #f0a132; vertical-align: center; margin-right: 10px; box-shadow: #f0a132 0px 0px 12px 0px;" />
         <Label text="QoL HUD" hittest="false" style="font-size: 18px; color: #efe9e3; font-weight: bold; vertical-align: center; letter-spacing: 1px;" />
         <Label text="mods &amp; settings" hittest="false" style="font-size: 11px; color: #a39b93; vertical-align: center; margin-left: 10px;" />
         <Button onactivate="QolMenu.toggle()" style="horizontal-align: right; width: 28px; height: 24px; border-radius: 12px; background-color: #1a1716; border: 1px solid #2a2523;"><Label text="×" style="font-size: 14px; color: #efe9e3; horizontal-align: center; vertical-align: center;" /></Button>
       </Panel>
-      <Panel id="QolMenuBody" style="flow-children: down; width: 100%; padding: 10px 16px 14px 16px; max-height: 620px; overflow: squish scroll;" />
+      <Panel id="QolMenuBody" style="flow-children: down; width: 100%; padding: 10px 16px 14px 16px; max-height: 560px; overflow: squish scroll;" />
     </Panel>
 
 <!-- MODULE_PANELS -->

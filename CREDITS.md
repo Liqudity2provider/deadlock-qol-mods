@@ -22,6 +22,11 @@ editor-only files. Slimmed copies are for personal use only: the licenses above 
 
 Install: put each mod's `pakNN_dir.vpk` into `Deadlock/game/citadel/addons/` (keep the numbers distinct) after running the QoL HUD installer, which sets up `gameinfo.gi`.
 
+## Graphics configs
+- [Sqooky's OptimizationLock](https://gamebanana.com/mods/656341) by Sqooky and contributors (GPL-3.0). We recommend
+  installing its gameinfo.gi as is; `perf/qol_fast.cfg` / `qol_pretty.cfg` (also inside the VPK for the menu's graphics
+  buttons) reuse its ConVar values and are GPL-3.0.
+
 ## Tools and references
 - [modlock](https://github.com/paralin/modlock) — Panorama compiler and VPK tools.
 - [ValveResourceFormat](https://github.com/ValveResourceFormat/ValveResourceFormat) — format reference for KV3 v5, sounds and textures.

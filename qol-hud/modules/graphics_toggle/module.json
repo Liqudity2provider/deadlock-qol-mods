@@ -1,0 +1,1 @@
+{ "id": "graphics_toggle", "kind": "hud", "name": "Graphics toggle", "description": "cfg/qol_fast.cfg + cfg/qol_pretty.cfg for the menu's graphics buttons (exec in console works too)", "assets": "assets" }

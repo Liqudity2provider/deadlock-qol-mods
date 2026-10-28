@@ -1,6 +1,6 @@
 # QoL HUD — modular Deadlock HUD mod with an in-game settings menu
 
-One VPK, several modules, a ⚙ button on the HUD. Each module can be switched on/off and configured in the menu while
+One VPK, several modules, one menu: the ⚙ mods button on the HUD or QOL HUD in the Esc menu (next to QOL Lock's button). Each module can be switched on/off and configured in the menu while
 playing; settings persist between matches when the game exposes `$.persistentStorage` (CS2-era Panorama does; if not,
 the menu says so and settings last for the session).
 
@@ -10,6 +10,8 @@ modules/timings/             upcoming objectives strip + marks (S/M/L/Sin/Mid/Bo
 modules/routes/              box routes as numbered dots over the minimap                          [hud]
 modules/parry/               parry window + cooldown countdown under the crosshair (knows Rebuttal) [hud]
 modules/heavy_melee_sound/   louder heavy-melee wind-up (compiled sounds in assets/)               [sound]
+modules/heavy_melee_glow/    big red glow on the hand of anyone charging a heavy melee (particle)  [fx]
+modules/graphics_toggle/     cfg/qol_fast.cfg + qol_pretty.cfg for the menu's graphics buttons      [hud]
 modules/_example_skin/       template for texture/model replacements                              [skin]
 config.json                  {"disabled": [...]} build-time switch; VERSION shown in the menu
 build.py                     assembles core + modules -> src/ -> dist/pak57_dir.vpk (modlock)
@@ -30,8 +32,9 @@ python3 tools/vsnd.py build orig/sounds/player/melee/shared/charged_melee_full.v
 `--onset` cuts everything before the main hit so it lands at 0 ms; `--seconds N` limits length. Find which file an
 event plays with `modlock kv3 soundevents/....vsndevts_c` (see `Player.Melee.Hold.Shared`, `Nurse.Fear.Cast`).
 
-The menu has tabs All / HUD / Sounds / Skins. HUD cards have an ON/OFF pill and settings rows; sound and skin
-cards are informational (they are files inside the VPK, so changing them means rebuilding and restarting).
+The menu starts with a Quick card (graphics fast/pretty via `CitadelConCommand` + `exec qol_*`, box route, respawn
+marks, old quick bar on/off), then tabs All / HUD / Sounds / FX / Skins. HUD cards have an ON/OFF pill and settings
+rows; sound, fx and skin cards are informational (they are files inside the VPK, so changing them means rebuilding and restarting).
 
 ## Build
 ```bash
@@ -55,7 +58,8 @@ Create `modules/<name>/` with:
   });
   ```
 - `panel.xml` (optional) — Panorama XML inserted into the HUD root (use inline `style=`, no CSS files).
-- `quick.xml` (optional) — buttons inserted into the quick bar next to ⚙.
+- `quick.xml` (optional) — buttons for the old quick bar next to ⚙ (hidden by default; put the same actions in the
+  menu's Quick card in core/menu.js).
 Rename the folder to `_name` to leave it out of the build. Read settings with `QolRegistry.value(id, key)`,
 store your own state with `QolSettings.set(id, key, v)`.
 
