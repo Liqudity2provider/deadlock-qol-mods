@@ -1,3 +1,19 @@
+// Cached panel lookup by id. FindChildTraverse from the root walks the whole UI tree (other HUD mods such as QOL Lock
+// add thousands of panels), so modules must not call it every tick: hits are kept while IsValid(), misses retried <= 1/s.
+var QolFind = (function () {
+  var hit = {}, miss = {};
+  function root() { var r = $.GetContextPanel(); while (r && r.GetParent()) r = r.GetParent(); return r; }
+  return function (id) {
+    var p = hit[id];
+    if (p && p.IsValid()) return p;
+    var now = Date.now();
+    if (miss[id] && now - miss[id] < 1000) return null;
+    var r = root(); p = r ? r.FindChildTraverse(id) : null;
+    if (p) { hit[id] = p; delete miss[id]; } else { delete hit[id]; miss[id] = now; }
+    return p;
+  };
+})();
+
 // Settings store + module registry. Persists through $.persistentStorage when the build exposes it
 // (CS2-era Panorama does), otherwise settings live for the session only.
 var QolSettings = (function () {

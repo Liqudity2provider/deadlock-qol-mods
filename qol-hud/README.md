@@ -17,6 +17,8 @@ tools/vsnd.py                any audio -> Deadlock .vsnd_c using the original ga
 tools/gen_routes.py          map entity lump -> modules/routes/routes_data.js
 tools/vtex.py                recolor / replace BC7 textures (.vtex_c) without Valve tools
 tools/make_skins.py          rebuild all skin_* modules from game files via their recipe.json
+tools/slim_vpk.py            make a heavy skin VPK lighter: cap textures at N px (drops top mips), strip editor files
+tools/kv3patch.py            read / patch numbers in compiled KV3 resources in place (e.g. soundevent volumes)
 ```
 
 ## Making a sound module (no Valve tools)

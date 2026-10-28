@@ -8,8 +8,7 @@ var QolRoutes = (function () {
   var CAL = { dx: 0, dy: 0, scale: 1.0 };
   var dots = [];
 
-  function root() { var r = $.GetContextPanel(); while (r && r.GetParent()) r = r.GetParent(); return r; }
-  function find(id) { var r = root(); return r ? r.FindChildTraverse(id) : null; }
+  function find(id) { return QolFind(id); }
 
   function absRect(p) {
     if (!p || !p.IsValid()) return null;
@@ -25,7 +24,7 @@ var QolRoutes = (function () {
     // minimap_container. hud_minimap carries a transform, so its own GetPositionWithinWindow is not its top-left;
     // the container's position is reliable, so we centre the image square inside it.
     var hud = find("Hud"); if (!hud) return null;
-    var img = hud.FindChildTraverse("hud_minimap"), box = absRect(hud.FindChildTraverse("minimap_container"));
+    var img = find("hud_minimap"), box = absRect(find("minimap_container"));
     if (!img || !box || box.w < 40 || !(box.x === box.x)) return null;   // NaN check: hidden minimap
     var w = img.actuallayoutwidth || box.w, h = img.actuallayoutheight || box.h;
     return { id: "minimap_container", x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w: w, h: h };

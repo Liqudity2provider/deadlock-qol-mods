@@ -147,8 +147,9 @@ def build(template, audio, out, seconds=None, gain=0.0, bitrate="192k", meta=Non
     start = find_onset(audio) if onset else 0.0
     with tempfile.TemporaryDirectory() as tmp:
         mp3 = os.path.join(tmp, "a.mp3")
-        af = ["afade=t=in:st=0:d=0.005"] if onset else ["silenceremove=start_periods=1:start_threshold=-35dB:start_silence=0.005"]
-        if gain: af.append("volume=%sdB" % gain)
+        af = ["aformat=sample_rates=%d:channel_layouts=%s" % (rate, "mono" if ch == 1 else "stereo")]   # downmix before the limiter
+        af += ["afade=t=in:st=0:d=0.005"] if onset else ["silenceremove=start_periods=1:start_threshold=-35dB:start_silence=0.005"]
+        if gain: af += ["volume=%sdB" % gain, "alimiter=limit=0.97:attack=1:release=60:level=0"]   # loud, not clipped
         if seconds: af.append("afade=t=out:st=%s:d=0.35" % max(0, float(seconds) - 0.35))
         cmd = ["ffmpeg", "-v", "error", "-y"] + (["-ss", "%.3f" % start] if start else []) + ["-i", audio, "-af", ",".join(af)]
         if seconds: cmd += ["-t", str(seconds)]

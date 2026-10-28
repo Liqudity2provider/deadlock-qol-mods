@@ -5,8 +5,7 @@ var QolMenu = (function () {
   var C = { bg: "#0d0b0bf2", card: "#161312", line: "#2a2523", fg: "#efe9e3", muted: "#a39b93", accent: "#f0a132", ok: "#7bd389", bad: "#f06a5a", teal: "#4fd1c5", purple: "#c084fc" };
   var KIND = { hud: { label: "HUD", color: C.accent }, sound: { label: "SOUND", color: C.purple }, skin: { label: "SKIN", color: C.teal } };
 
-  function root() { var r = $.GetContextPanel(); while (r && r.GetParent()) r = r.GetParent(); return r; }
-  function find(id) { var r = root(); return r ? r.FindChildTraverse(id) : null; }
+  function find(id) { return QolFind(id); }
 
   function mk(type, parent, st, text) {
     var p = $.CreatePanel(type, parent, "");

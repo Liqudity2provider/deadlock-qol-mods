@@ -5,14 +5,13 @@
 var QolParry = (function () {
   var ACTIVE = 0.75, TOTAL = 1.0;
   var state = { phase: "idle", t0: 0 };      // idle | active | tail | cooldown
-  var enabled = true, showCooldown = true, scale = 1.0, wasVisible = false, cdEnd = 0;
+  var enabled = true, showCooldown = true, scale = 1.0, wasVisible = false, cdEnd = 0, shown = true;
 
-  function root() { var r = $.GetContextPanel(); while (r && r.GetParent()) r = r.GetParent(); return r; }
-  function find(id) { var r = root(); return r ? r.FindChildTraverse(id) : null; }
+  function find(id) { return QolFind(id); }
   var indicator = null;
   function parryPanel() {
     if (indicator && indicator.IsValid()) return indicator;
-    var hud = find("Hud"); indicator = hud ? hud.FindChildTraverse("parry_unavailable") : null;
+    indicator = find("parry_unavailable");
     return indicator;
   }
   function visibleNow(p) { return !!(p && p.IsValid() && p.visible && (p.actuallayoutwidth || 0) > 0); }
@@ -37,8 +36,8 @@ var QolParry = (function () {
     if (state.phase === "active" && el >= ACTIVE) state.phase = "tail";
     if (state.phase === "tail" && el >= TOTAL) state.phase = showCooldown ? "cooldown" : "idle";
     if (state.phase === "cooldown" && (!wasVisible || el > 12)) state.phase = "idle";
-    if (state.phase === "idle") { box.style.visibility = "collapse"; $.Schedule(0.03, render); return; }
-    box.style.visibility = "visible";
+    if (state.phase === "idle") { if (shown) { box.style.visibility = "collapse"; shown = false; } $.Schedule(0.05, render); return; }
+    if (!shown) { box.style.visibility = "visible"; shown = true; }
     var w = Math.round(180 * scale) + "px"; box.style.width = w; find("QolParryTrack").style.width = w;
     if (state.phase === "active") {
       txt.text = "PARRY " + (ACTIVE - el).toFixed(2); txt.style.color = "#7bd389";

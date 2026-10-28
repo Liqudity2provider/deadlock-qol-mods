@@ -4,7 +4,8 @@ var QolTimings = (function () {
   var marks = [], midDeaths = 0, enabled = true;
 
   function fmt(s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60); }
-  function panel(id) { var r = $.GetContextPanel(); while (r && r.GetParent()) r = r.GetParent(); return r ? r.FindChildTraverse(id) : null; }
+  function panel(id) { return QolFind(id); }
+  function setText(l, s) { if (l.text !== s) l.text = s; }   // unchanged text: no relayout
 
   function upcoming(t) {
     var out = [];
@@ -23,8 +24,8 @@ var QolTimings = (function () {
     var t = QolClock.now(), next = panel("QolNextLabel");
     if (!next) { $.Schedule(0.5, render); return; }
     if (t < 0) {
-      next.text = "timers: waiting for match clock (press 0:00 at the horn)";
-      for (var j = 1; j <= 5; j++) { var l = panel("QolList" + j); if (l) l.text = ""; }
+      setText(next, "timers: waiting for match clock (press 0:00 at the horn)");
+      for (var j = 1; j <= 5; j++) { var l = panel("QolList" + j); if (l) setText(l, ""); }
       $.Schedule(0.5, render); return;
     }
     var up = upcoming(t);
@@ -32,13 +33,13 @@ var QolTimings = (function () {
     var wave = up.filter(function (e) { return e.minor; })[0];
     var parts = soon.map(function (e) { return e.name + " " + fmt(e.at - t); });
     if (wave && wave.at - t <= 5) parts.push("wave " + fmt(wave.at - t));
-    next.text = parts.length ? "NEXT  " + parts.join("   ·   ") : "[" + fmt(t) + "]  nothing in " + cfg.lookahead + "s";
+    setText(next, parts.length ? "NEXT  " + parts.join("   ·   ") : "[" + fmt(t) + "]  nothing in " + cfg.lookahead + "s");
     next.style.color = soon.length && soon[0].at - t <= 3 ? "#f0a132" : "#efe9e3";
     var rest = up.filter(function (e) { return !e.minor; }).slice(0, cfg.rows);
     for (var i = 1; i <= 5; i++) {
       var lab = panel("QolList" + i); if (!lab) continue;
       var e = rest[i - 1];
-      lab.text = e ? (e.marked ? "• " : "  ") + e.name + "  " + fmt(e.at - t) + (e.note ? "  (" + e.note + ")" : "") : "";
+      setText(lab, e ? (e.marked ? "• " : "  ") + e.name + "  " + fmt(e.at - t) + (e.note ? "  (" + e.note + ")" : "") : "");
     }
     $.Schedule(0.25, render);
   }

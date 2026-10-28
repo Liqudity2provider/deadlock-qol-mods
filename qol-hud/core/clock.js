@@ -2,14 +2,11 @@
 // Fallback: a local stopwatch started when the MatchStart takeover disappears, or by the 0:00 button.
 var QolClock = (function () {
   var hud = null, clockLabel = null, lastText = "", lastSeconds = -1, labelPathStr = "";
-  var manualStartAt = null, matchStartSeen = false, matchStartGone = false;
+  var lastSearch = 0, manualStartAt = null, matchStartSeen = false, matchStartGone = false;
   var TIME_RE = /^\s*(\d{1,3}):(\d{2})\s*$/;
 
   function hudPanel() {
-    if (hud && hud.IsValid()) return hud;
-    var p = $.GetContextPanel();
-    while (p && p.IsValid() && p.GetParent()) p = p.GetParent();
-    hud = p ? p.FindChildTraverse("Hud") : null;
+    hud = QolFind("Hud");
     return hud;
   }
 
@@ -37,10 +34,13 @@ var QolClock = (function () {
   function poll() {
     var h = hudPanel();
     if (h) {
-      if (!clockLabel || !clockLabel.IsValid()) {
+      if ((!clockLabel || !clockLabel.IsValid()) && Date.now() - lastSearch > 2000) {   // label search is a tree walk
+        lastSearch = Date.now();
         // only trust a mm:ss label inside the top bar: other HUD labels (respawn timers, hideout clocks) also look like mm:ss
-        var top = h.FindChildTraverse("TopBar");
-        clockLabel = top ? findClockLabel(top) : null;
+        var top = QolFind("TopBar");
+        // the game's own label first: other top-bar mods (QOL Lock) add mm:ss countdowns that a scan would pick
+        var gt = top ? top.FindChildTraverse("GameTime") : null;
+        clockLabel = gt && gt.paneltype === "Label" ? gt : top ? findClockLabel(top) : null;
         if (clockLabel) { var q = clockLabel, parts = []; while (q && q !== top && parts.length < 6) { parts.unshift(q.id || q.paneltype); q = q.GetParent(); } labelPathStr = parts.join("/"); }
       }
       if (clockLabel) {

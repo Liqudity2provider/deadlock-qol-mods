@@ -9,6 +9,7 @@ mip count) and rewrite the payload: decode mip 0, edit, rebuild the mip chain, r
   vtex.py recolor FILE.vtex_c OUT.vtex_c [--hue DEG] [--sat X] [--val X] [--tint #rrggbb --tint-amount 0..1]
                  [--hue-from DEG --hue-to DEG]   (only touch pixels whose hue is in that range)  [--preview OUT.png]
   vtex.py replace FILE.vtex_c IMAGE.png OUT.vtex_c          (image is resized to the texture size)
+  vtex.py shrink FILE.vtex_c OUT.vtex_c --max 1024          (drop the largest mips: no re-encode, any block format)
 """
 import argparse, struct, sys, os
 import numpy as np
@@ -20,6 +21,9 @@ import vsnd  # resource parsing helpers
 
 FMT = {1: "DXT1", 2: "DXT5", 20: "BC7"}
 BLOCK_BYTES = {1: 8, 2: 16, 20: 16}
+# every format shrink() can slice: block-compressed (bytes per 4x4 block) and plain (bytes per pixel)
+SLICE_BLOCK = {1: 8, 2: 16, 19: 16, 20: 16, 21: 16, 27: 8}
+SLICE_PIXEL = {3: 1, 4: 4, 22: 2, 28: 4}
 
 
 def header(d):
@@ -74,6 +78,32 @@ def encode_chain(img, H):
     return b"".join(out)
 
 
+def slice_bytes(fmt, w, h):
+    if fmt in SLICE_PIXEL: return w * h * SLICE_PIXEL[fmt]
+    return max(1, (w + 3) // 4) * max(1, (h + 3) // 4) * SLICE_BLOCK[fmt]
+
+
+def shrink(d, max_side):
+    """Return a copy of the texture whose largest mip is <= max_side, or None when it can't / needn't be shrunk.
+
+    Mips are stored smallest first, so dropping the top k levels is a cut of the payload's tail plus a header patch
+    (width, height, mip count); the remaining mips are the original encoder's output, untouched."""
+    H = header(d)
+    if H["fmt"] not in SLICE_BLOCK and H["fmt"] not in SLICE_PIXEL: return None
+    if H["depth"] != 1 or (H["flags"] & 0x0F) or 4 in H["extra"] or 3 in H["extra"]: return None
+    sizes = [slice_bytes(H["fmt"], *mip_dims(H["w"], H["h"], i)) for i in range(H["mips"])]
+    if sum(sizes) != len(H["R"]["tail"]): return None
+    k = 0
+    while max(mip_dims(H["w"], H["h"], k)) > max_side and k < H["mips"] - 1: k += 1
+    if k == 0: return None
+    w, h = mip_dims(H["w"], H["h"], k)
+    o = [b for b in H["R"]["blocks"] if b[0] == b"DATA"][0][1]
+    head = bytearray(d[:H["R"]["size"]])
+    struct.pack_into("<HH", head, o + 20, w, h)
+    head[o + 27] = H["mips"] - k
+    return bytes(head) + H["R"]["tail"][:len(H["R"]["tail"]) - sum(sizes[:k])]
+
+
 def recolor(img, hue=0.0, sat=1.0, val=1.0, tint=None, tint_amount=0.0, hue_from=None, hue_to=None):
     a = np.asarray(img.convert("RGBA")).astype(np.float32) / 255.0
     rgb, alpha = a[..., :3], a[..., 3:]
@@ -107,8 +137,13 @@ def main():
         r.add_argument(k, type=t, default=dv)
     r.add_argument("--tint"); r.add_argument("--preview")
     p = sub.add_parser("replace"); p.add_argument("file"); p.add_argument("image"); p.add_argument("out")
+    k = sub.add_parser("shrink"); k.add_argument("file"); k.add_argument("out"); k.add_argument("--max", type=int, default=1024)
     args = ap.parse_args()
     d = open(args.file, "rb").read(); H = header(d)
+    if args.cmd == "shrink":
+        out = shrink(d, args.max)
+        if out is None: raise SystemExit("nothing to shrink (already small or unsupported layout)")
+        open(args.out, "wb").write(out); print({"out": args.out, "bytes": len(out), "was": len(d)}); return
     if args.cmd == "info":
         print({k: H[k] for k in ("w", "h", "fmt", "mips", "flags", "extra")}, FMT.get(H["fmt"]), "payload", len(H["R"]["tail"])); return
     check(H, d)
